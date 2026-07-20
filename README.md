@@ -46,15 +46,19 @@ pkg install git -y && git clone [https://github.com/Baldallo15/Friz_Descargas.gi
 ### 📅 Historial de Actualizaciones (Novedades)
 ​<details>
 <summary><b>🔄 Haz clic aquí para ver el listado de versiones anteriores</b></summary>
-​v1.2.0 (Versión Actual)
+​```v1.2.0 (Versión Actual)```
 ​Compatibilidad Absoluta: Migración a sys.executable para prevenir cierres del software al actualizar la versión de Python en Termux.
 ​Módulo Universal: Integración de yt-dlp refinado para descargas en TikTok (sin marcas de agua), Instagram, Facebook, X y Pinterest.
 ​Ruta de Almacenamiento Dinámica: Sustitución de rutas estáticas forzadas por rutas lógicas basadas en $HOME de Android.
-​v1.1.0
+
+
+​```v1.1.0```
 ​Rediseño estético del banner ANSI para entornos de terminal oscura.
 ​Estructuración del guardado automático unificado dentro del directorio Download/Friz/.
 ​Corrección en el bitrate nativo de conversión para transmisiones de Spotify.
-​v1.0.0
+
+
+​```v1.0.0 ```
 ​Lanzamiento inicial del script base.
 ​Soporte dedicado para enlaces individuales de YouTube y Spotify a 192kbps de resolución.
 </details>
