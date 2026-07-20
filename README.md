@@ -1,7 +1,7 @@
 # 🎵 Friz - Multi Downloader (Termux Edition) 🚀
 
 <p align="center">
-  <img src="preview.jpg" alt="Friz Logo" width="600">
+  <img src="foto/Frizi.png" alt="Friz Logo" width="600">
 </p>
 
 
