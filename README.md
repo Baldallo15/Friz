@@ -1,5 +1,12 @@
 # 🎵 Friz - Multi Downloader (Termux Edition) 🚀
 
+<p align="center">
+  <img src="preview.jpg" alt="Friz Logo" width="600">
+</p>
+
+
+
+
 Un script interactivo en Python diseñado específicamente para **Termux (Android)** que permite descargar música de **Spotify** y **YouTube** en distintas calidades de audio (`128kbps`, `192kbps` y `320kbps`). 
 
 Toda la música descargada se organiza automáticamente en la carpeta de almacenamiento de tu teléfono dentro de `Download/Friz/`.
