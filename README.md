@@ -1,53 +1,43 @@
-# 🎵 Friz - Multi Downloader (Termux Edition) 🚀
+# 🎵 Friz — Universal Multi-Downloader (Termux Edition) 🚀
 
 <p align="center">
   <img src="fotos/Frizi.png" alt="Friz Logo" width="600">
 </p>
 
-
-
-
-Un script interactivo en Python diseñado específicamente para **Termux (Android)** que permite descargar música de **Spotify** y **YouTube** en distintas calidades de audio (`128kbps`, `192kbps` y `320kbps`). 
-
-Toda la música descargada se organiza automáticamente en la carpeta de almacenamiento de tu teléfono dentro de `Download/Friz/`.
+<p align="center">
+  <img src="https://img.shields.io/badge/Platform-Termux%20%7C%20Android-green?style=for-the-badge&logo=android" alt="Platform">
+  <img src="https://img.shields.io/badge/Language-Python%203-blue?style=for-the-badge&logo=python" alt="Language">
+  <img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge" alt="License">
+</p>
 
 ---
 
-## 🛠️ Requisitos e Instalación en Termux
+Un script interactivo y optimizado en Python diseñado específicamente para **Termux (Android)**. Con **Friz**, puedes extraer y descargar contenido multimedia de casi cualquier red social sin limitaciones de velocidad y libre de marcas de agua. 
 
-Abre tu aplicación Termux y ejecuta los siguientes comandos en orden secuencial. 
+Toda la música, videos e imágenes se organizan de forma automática directamente en la carpeta física de tu teléfono dentro de `Download/Friz/`.
 
-### 1. Preparación del Sistema y Almacenamiento
-Consiste en dar permisos de almacenamiento a Termux para guardar los archivos y actualizar los paquetes internos.
+---
+
+## 🔥 Plataformas e Inyecciones Soportadas
+
+| Plataforma | Tipo de Contenido | ¿Sin Marca de Agua? | Calidad Máxima |
+| :--- | :--- | :---: | :---: |
+| **Spotify** | Pistas / Álbumes (Metadatos completos) | ✔ N/A | Hasta 320 kbps |
+| **YouTube** | Audio (MP3) / Video (MP4) | ✔ Sí | Full HD / 320 kbps |
+| **TikTok** | Videos / Audios de fondo | ✔ **Sí (Nativo)** | Calidad de Origen |
+| **Instagram** | Reels / Fotos | ✔ Sí | Calidad de Origen |
+| **Facebook** | Videos / Shorts | ✔ Sí | HD |
+| **X (Twitter)** | Videos | ✔ Sí | Calidad de Origen |
+| **Pinterest** | Imágenes / Pines estáticos | ✔ Sí | Alta Resolución |
+
+---
+
+## 🛠️ Métodos de Instalación
+
+Elige el método que prefieras para configurar tu entorno en Termux.
+
+### MÉTODOS 1: Instalación Express Semiatomática (Recomendado) 🚀
+Copia y pega la siguiente línea en tu terminal para clonar el repositorio e iniciar el asistente de configuración automatizado:
+
 ```bash
-termux-setup-storage
-pkg update && pkg upgrade -y
-
-```
-### 2. Instalación de Dependencias del Sistema 😎
-
-Instalamos el repositorio de paquetes estables, la versión recomendada de Python (3.11), el procesador de audio FFmpeg y herramientas de compilación para evitar errores de compatibilidad.
-```
-pkg install tur-repo -y
-pkg install python3.11 ffmpeg build-essential rust -y
-```
-
-### 3. Instalación de Librerías de Descarga (Python)📜📚
-
-Configuramos las variables del sistema Android y descargamos los motores principales (yt-dlp y spotdl) directamente en el entorno aislado de Python 3.11
-
-```
-export ANDROID_API_LEVEL=24
-python3.11 -m pip install --upgrade pip setuptools wheel
-python3.11 -m pip install yt-dlp spotdl
-```
-### 4. Instalacion de Git
-
-Aclaro que no es necesario ejecutar el script con python3.11, después de la instalación completamente ya solo que pegar el link directo del video de YouTube o musica de Spotify
-
-```
-https://github.com/Baldallo15/Friz_Descargas.git
-cd Friz_Descargas
-python3 Friz.py
-```
-### GRACIAS POR USAR❤️🇻🇪
+pkg install git -y && git clone [https://github.com/Baldallo15/Friz_Descargas.git](https://github.com/Baldallo15/Friz_Descargas.git) && cd Friz_Descargas && bash install.sh
