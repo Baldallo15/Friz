@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ==============================================================================
-# 🎵 Friz - Script de Instalación Automatizado (Termux / Android)
+# 🎵 Friz - Script de Instalación Automatizado (Termux / Androчid)
 # ==============================================================================
 
 # Colores para la interfaz
