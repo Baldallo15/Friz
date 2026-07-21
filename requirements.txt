@@ -27,3 +27,6 @@ s
 certifi
 urllib3
 pydantic-core
+pip install --upgrade pip setuptools wheel
+pydantic
+	
