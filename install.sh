@@ -29,6 +29,8 @@ pkg update -y && pkg upgrade -y
 echo -e "\n${YELLOW}[2/5] Instalando dependencias del sistema (Python, FFmpeg, Git)...${NC}"
 pkg install python ffmpeg git -y
 
+pip install pydantic-core
+
 echo -e "\n${YELLOW}[3/5] Solicitando permisos de almacenamiento en Android...${NC}"
 echo -e "${CYAN}Si aparece una ventana emergente en tu pantalla, presiona 'PERMITIR'.${NC}"
 termux-setup-storage
