@@ -1,16 +1,9 @@
-# ============================================================
-==================
-# 🎵 Friz - Universal Multi-Downloader Dependencies (Latest St
-able Releases)
-# ============================================================
-==================
 
-# Descargas multimedia universales (YouTube, TikTok, Instagram
-, Facebook, X, Pinterest)
+
+# Descargas multimedia universales (YouTube, TikTok, Instagra
 yt-dlp
 
 # Extracción y descarga de música/álbumes desde Spotify con me
-tadatos y portadas
 spotdl
 
 # Peticiones HTTP y manejo de API
