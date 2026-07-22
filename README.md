@@ -62,7 +62,7 @@
 
 ---
 
-## InstalaciÃ³n
+## Instalaci9n
 
 Asegurate de tener **Git** y **Python 3** instalados en tu sistema antes de comenzar.
 
@@ -94,7 +94,8 @@ pkg update && pkg upgrade
 pkg install git python
 git clone https://github.com/Baldallo15/Friz_Descargas.git
 cd Friz_Descargas
-python main.py
+chmod +x *
+bash install.sh
 ```
 
 ---
