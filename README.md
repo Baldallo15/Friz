@@ -55,7 +55,7 @@
 ## Vista Previa
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/abhishekkrthakur/readme-assets/main/cli_demo.gif" alt="Demo de Terminal (Referencia)" width="70%">
+  <img src="fotos/video.mp4" alt="Demo de Terminal (Referencia)" width="70%">
   <br>
   <i>(Animacion de referencia de uso en terminal)</i>
 </div>
