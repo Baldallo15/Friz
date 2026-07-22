@@ -2,7 +2,7 @@
   <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&height=200&section=header&text=Friz%20Universal%20Multi-Downloader&fontSize=45&animation=fadeIn" alt="Banner Friz">
 </div>
 
-<h1 align="center"> âš¡ Friz Descargas âš¡ </h1>
+<h1 align="center">Friz Descargas</h1>
 
 <div align="center">
   <a href="https://github.com/Baldallo15/Friz_Descargas">
@@ -20,53 +20,53 @@
 <br>
 
 <p align="center">
-  <b>Friz Universal Multi-Downloader</b> es una herramienta avanzada desarrollada en Python, diseÃ±ada para simplificar y acelerar las descargas de archivos desde mÃºltiples fuentes. Con un enfoque en rendimiento y flexibilidad, es el compaÃ±ero ideal tanto para entornos de escritorio como mÃ³viles.
+  <b>Friz Universal Multi-Downloader</b> es una herramienta avanzada desarrollada en Python, diseñada para simplificar y acelerar las descargas de archivos desde multiples fuentes. Con un enfoque en rendimiento y flexibilidad, es el compañero ideal tanto para entornos de escritorio como moviles.
 </p>
 
 ---
 
 <details>
-<summary><b> ðŸ“– Tabla de Contenidos</b></summary>
+<summary><b> Tabla de Contenidos</b></summary>
 
-- [âœ¨ CaracterÃ­sticas Principales](#-caracterÃ­sticas-principales)
-- [ðŸ–¥ï¸ Vista Previa](#-vista-previa)
-- [âš™ï¸ InstalaciÃ³n](#ï¸-instalaciÃ³n)
+- [Caracterasticas Principales](#-caracterasticas-principales)
+- [Vista Previa](#-vista-previa)
+- [ Instalacion](#ï¸-instalacion)
   - [Windows](#windows)
   - [Linux](#linux)
   - [Termux (Android)](#termux)
-- [ðŸš€ Uso](#-uso)
-- [ðŸ¤ ContribuciÃ³n](#-contribuciÃ³n)
-- [ðŸ“ Licencia](#-licencia)
+- [Uso](#-uso)
+- [Contribucion](#-contribucion)
+- [Licencia](#-licencia)
 
 </details>
 
 ---
 
-## âœ¨ CaracterÃ­sticas Principales
+## Caracteristicas Principales
 
-- ðŸš€ **Multiplataforma Real:** Funciona a la perfecciÃ³n en **Windows**, **Linux** y **Termux** (Android).
-- âš¡ **Descargas Optimizadas:** Algoritmos mejorados para maximizar la velocidad de conexiÃ³n y minimizar fallos.
-- ðŸ› ï¸ **Desarrollo Activo:** Constantemente actualizado, implementando las mejores prÃ¡cticas y seguridad.
-- ðŸ’» **CLI Amigable:** Interfaz de lÃ­nea de comandos intuitiva con retroalimentaciÃ³n visual clara.
-- ðŸ“¦ **CÃ³digo Abierto:** Modifica, adapta o empaqueta el script en un APK u otros formatos segÃºn tus necesidades.
+- **Multiplataforma Real:** Funciona a la perfeccion en **Windows**, **Linux** y **Termux** (Android).
+- **Descargas Optimizadas:** Algoritmos mejorados para maximizar la velocidad de conexion y minimizar fallos.
+- **Desarrollo Activo:** Constantemente actualizado, implementando las mejores practicas y seguridad.
+- **CLI Amigable:** Interfaz de comandos intuitiva con retroalimentacion visual clara.
+- **Codigo Abierto:** Modifica, adapta o empaqueta el script en un APK u otros formatos segun tus necesidades.
 
 ---
 
-## ðŸ–¥ï¸ Vista Previa
+## Vista Previa
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/abhishekkrthakur/readme-assets/main/cli_demo.gif" alt="Demo de Terminal (Referencia)" width="70%">
   <br>
-  <i>(AnimaciÃ³n de referencia de uso en terminal)</i>
+  <i>(Animacion de referencia de uso en terminal)</i>
 </div>
 
 ---
 
-## âš™ï¸ InstalaciÃ³n
+## InstalaciÃ³n
 
-AsegÃºrate de tener **Git** y **Python 3** instalados en tu sistema antes de comenzar.
+Asegurate de tener **Git** y **Python 3** instalados en tu sistema antes de comenzar.
 
-### ðŸªŸ Windows
+### Windows
 1. Abre tu consola (PowerShell o CMD).
 2. Clona el repositorio:
    ```bash
@@ -78,7 +78,7 @@ AsegÃºrate de tener **Git** y **Python 3** instalados en tu sistema antes de c
    python main.py
    ```
 
-### ðŸ§ Linux
+### Linux
 1. Abre tu terminal.
 2. Clona y ejecuta:
    ```bash
@@ -87,8 +87,8 @@ AsegÃºrate de tener **Git** y **Python 3** instalados en tu sistema antes de c
    python3 main.py
    ```
 
-### ðŸ“± Termux
-Si lo estÃ¡s utilizando desde un dispositivo Android:
+### Termux
+Si lo estqs utilizando desde un dispositivo Android:
 ```bash
 pkg update && pkg upgrade
 pkg install git python
@@ -99,24 +99,24 @@ python main.py
 
 ---
 
-## ðŸš€ Uso
+## Uso
 
 Una vez ejecutado el script, simplemente sigue las instrucciones interactivas en pantalla. 
 Ingresa los enlaces que deseas descargar y deja que **Friz** haga su magia.
 
 ```bash
-# Comando bÃ¡sico de ejecuciÃ³n
-python main.py 
+# Comando bqsico de ejecucion
+python friz.py 
 ```
 
 ---
 
-## ðŸ¤ ContribuciÃ³n
+## Contribucion
 
-Â¡Las contribuciones son bienvenidas! Si deseas mejorar este proyecto:
+Las contribuciones son bienvenidas! Si deseas mejorar este proyecto:
 1. Haz un *Fork* del repositorio.
-2. Crea una rama para tu funciÃ³n (`git checkout -b feature/NuevaFuncion`).
-3. Confirma tus cambios (`git commit -m 'AÃ±adir nueva funciÃ³n'`).
+2. Crea una rama para tu funcion (`git checkout -b feature/NuevaFuncion`).
+3. Confirma tus cambios (`git commit -m 'Añadir nueva funcion'`).
 4. Sube los cambios (`git push origin feature/NuevaFuncion`).
 5. Abre un *Pull Request*.
 
@@ -126,13 +126,13 @@ python main.py
 
 ---
 
-## ðŸ“ Licencia
+## Licencia
 
-Este proyecto estÃ¡ bajo la Licencia **MIT**. Consulta el archivo `LICENSE` para mÃ¡s detalles.
+Este proyecto estÃ¡ bajo la Licencia **MIT**. Consulta el archivo `LICENSE` para mas detalles.
 
 ---
 <div align="center">
   <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&height=100&section=footer" width="100%"/>
   <br>
-  <i>Hecho con â¤ï¸ por <a href="https://github.com/Baldallo15">Baldallo15</a></i>
+  <i>Hecho con Cariño¸ por <a href="https://github.com/Baldallo15">Baldallo15</a></i>
 </div>
