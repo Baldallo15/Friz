@@ -53,7 +53,7 @@ mkdir -p /sdcard/Download/Friz
 
 # Crear el acceso directo 'friz' en el PATH del sistema
 LAUNCHER="$PREFIX/bin/friz"
-SCRIPT_PATH="$(pwd)/Friz.py"
+SCRIPT_PATH="$(pwd)/friz.py"
 
 cat << EOF > "$LAUNCHER"
 #!/bin/bash
@@ -61,7 +61,7 @@ python3 "$SCRIPT_PATH" "\$@"
 EOF
 
 chmod +x "$LAUNCHER"
-chmod +x Friz.py
+chmod +x friz.py
 
 echo -e "\n${GREEN}====================================================${NC}"
 echo -e "${GREEN}  ¡INSTALACIÓN COMPLETADA CON ÉXITO! 🎉${NC}"
@@ -70,5 +70,5 @@ echo -e "${CYAN}Tus descargas se guardarán en: ${YELLOW}/sdcard/Download/Friz/$
 echo -e "${CYAN}Para iniciar la herramienta puedes escribir en tu terminal:${NC}"
 echo -e "${YELLOW}  friz${NC}"
 echo -e "${CYAN}o ejecutar:${NC}"
-echo -e "${YELLOW}  python Friz.py${NC}"
+echo -e "${YELLOW}  python friz.py${NC}"
 echo -e "${GREEN}====================================================${NC}\n"
