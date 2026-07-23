@@ -1,0 +1,4 @@
+# Activos binarios pesados servidos vía Git LFS en vez de versionarse
+# directamente en el historial del repositorio.
+fotos/*.mp4 filter=lfs diff=lfs merge=lfs -text
+fotos/*.png filter=lfs diff=lfs merge=lfs -text
