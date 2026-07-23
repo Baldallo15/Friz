@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ==============================================================================
-#  G I T H U B   A U T O M A T O R   P R O
+#  G I T   U P D A T E   P R O
 #  Script elegante para la gestión y sincronización de repositorios en GitHub
 # ==============================================================================
 
@@ -24,11 +24,11 @@ show_banner() {
     clear
     echo -e "${COLOR_PRIMARY}${BOLD}"
     cat << "EOF"
-   ____  _ _  _  _       _       _   _ ____  
-  / ___|(_) |_| || |_  _| | ___ | | | |  _ \ 
- | |  _ | | __| || |_ / _ |/ _ \| | | | |_) |
- | |_| || | |_|__   _| (_| | (_) | |_| |  __/ 
-  \____||_|\__|  |_|  \__,_|\___/ \___/|_|   
+   ____ ___ _____   _   _ ____  ____    _ _____ _____ 
+  / ___|_ |_   _| | | | |  _ \|  _ \  / | |_   _| ____|
+ | |  _ | |  | |   | | | | |_) | | | | | |   | | |  _|  
+ | |_| || |  | |   | |_| |  __/| |_| | | |   | | | |___ 
+  \____|___| |_|    \___/|_|   |____/  |_|   |_| |_____|
 EOF
     echo -e "${COLOR_SECONDARY} ⚡ Git Sync & Deploy Tool • Termux / Linux Edition${COLOR_RESET}"
     echo -e "${COLOR_MUTED}──────────────────────────────────────────────────────────${COLOR_RESET}\n"
@@ -74,7 +74,7 @@ if [ -f "$CONFIG_FILE" ]; then
 fi
 
 if [ -n "$SAVED_USER" ]; then
-    echo -e "${COLOR_PRIMARY}[👤 Usuario Detected]${COLOR_RESET} Actual: ${BOLD}${SAVED_USER}${COLOR_RESET}"
+    echo -e "${COLOR_PRIMARY}[👤 Usuario Detectado]${COLOR_RESET} Actual: ${BOLD}${SAVED_USER}${COLOR_RESET}"
     read -p "$(echo -e ${COLOR_MUTED}"¿Usar este usuario? [S/n]: "${COLOR_RESET})" USE_SAVED
     USE_SAVED=${USE_SAVED:-S}
     if [[ "$USE_SAVED" =~ ^[Ss]$ ]]; then
@@ -95,7 +95,7 @@ echo "USERNAME=$USERNAME" > "$CONFIG_FILE"
 CURRENT_DIR=$(basename "$PWD")
 echo -e "\n${COLOR_PRIMARY}[📦 Repositorio]${COLOR_RESET}"
 
-SAVED_REPOS=$(grep "^REPO_" "$CONFIG_FILE" | cut -d'=' -f2 | sort -u)
+SAVED_REPOS=$(grep "^REPO_NAME=" "$CONFIG_FILE" | cut -d'=' -f2 | sort -u)
 
 if [ -n "$SAVED_REPOS" ]; then
     echo -e "${COLOR_MUTED}Historial de repositorios recientes:${COLOR_RESET}"
