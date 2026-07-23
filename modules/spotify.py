@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # modules/spotify.py
 """
 Descargador de Spotify.
@@ -18,6 +19,16 @@ class SpotifyDownloader(BaseDownloader):
         console.print(f"\n[bold bright_cyan]⚡ INICIANDO DESCARGA DE SPOTIFY...[/]")
         output_template = os.path.join(self.output_dir, "{artist} - {title}.{ext}")
 
+=======
+import os
+from modules.base import BaseDownloader, console
+
+class SpotifyDownloader(BaseDownloader):
+    def download(self, url: str) -> bool:
+        console.print(f"\n[bold bright_cyan]⚡ INICIANDO DESCARGA DE SPOTIFY...[/]")
+        output_template = os.path.join(self.output_dir, "{artist} - {title}.{ext}")
+        
+>>>>>>> a55455ace6e1916f13d94d164a5e1b7214866eca
         cmd = [
             "spotdl",
             "download", url,

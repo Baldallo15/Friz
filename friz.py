@@ -121,6 +121,7 @@ def main():
 
         # Instancia el módulo modularizado de forma aislada
         handler = handler_class()
+<<<<<<< HEAD
 
         try:
             # download_seguro() vuelve a validar la URL dentro del propio
@@ -130,6 +131,13 @@ def main():
                 console.print(f"\n[bold red]⚠️ El módulo {nombre_plataforma} reportó una interrupción.[/]")
         except KeyboardInterrupt:
             console.print(f"\n[bold yellow]⏸ Descarga cancelada por el usuario.[/]")
+=======
+        
+        try:
+            exito = handler.download(url)
+            if not exito:
+                console.print(f"\n[bold red]⚠️ El módulo {nombre_plataforma} reportó una interrupción.[/]")
+>>>>>>> a55455ace6e1916f13d94d164a5e1b7214866eca
         except Exception as e:
             console.print(f"\n[bold red]💥 Error no controlado en {nombre_plataforma}: {e}[/]")
 

@@ -20,7 +20,11 @@
 <br>
 
 <p align="center">
+<<<<<<< HEAD
   <b>Friz Universal Multi-Downloader</b> es una herramienta avanzada desarrollada en Python, diseñada para simplificar y acelerar las descargas de archivos desde múltiples fuentes. Con un enfoque en rendimiento y flexibilidad, es el compañero ideal tanto para entornos de escritorio como móviles.
+=======
+  <b>Friz Universal Multi-Downloader</b> es una herramienta avanzada desarrollada en Python, diseñada para simplificar y acelerar las descargas de archivos desde multiples fuentes. Con un enfoque en rendimiento y flexibilidad, es el compañero ideal tanto para entornos de escritorio como moviles.
+>>>>>>> a55455ace6e1916f13d94d164a5e1b7214866eca
 </p>
 
 ---
@@ -28,21 +32,35 @@
 <details>
 <summary><b> Tabla de Contenidos</b></summary>
 
+<<<<<<< HEAD
 - [Características Principales](#-características-principales)
 - [Vista Previa](#-vista-previa)
 - [Instalación](#-instalación)
+=======
+- [Caracterasticas Principales](#-caracterasticas-principales)
+- [Vista Previa](#-vista-previa)
+- [ Instalacion](#ï¸-instalacion)
+>>>>>>> a55455ace6e1916f13d94d164a5e1b7214866eca
   - [Windows](#windows)
   - [Linux](#linux)
   - [Termux (Android)](#termux)
 - [Uso](#-uso)
+<<<<<<< HEAD
 - [Contribución](#-contribución)
+=======
+- [Contribucion](#-contribucion)
+>>>>>>> a55455ace6e1916f13d94d164a5e1b7214866eca
 - [Licencia](#-licencia)
 
 </details>
 
 ---
 
+<<<<<<< HEAD
 ## Características Principales
+=======
+## Caracteristicas Principales
+>>>>>>> a55455ace6e1916f13d94d164a5e1b7214866eca
 
 - **Multiplataforma Real:** Funciona a la perfeccion en **Windows**, **Linux** y **Termux** (Android).
 - **Descargas Optimizadas:** Algoritmos mejorados para maximizar la velocidad de conexion y minimizar fallos.
@@ -62,9 +80,15 @@
 
 ---
 
+<<<<<<< HEAD
 ## Instalación
 
 Asegúrate de tener **Git** y **Python 3** instalados en tu sistema antes de comenzar.
+=======
+## Instalaci9n
+
+Asegurate de tener **Git** y **Python 3** instalados en tu sistema antes de comenzar.
+>>>>>>> a55455ace6e1916f13d94d164a5e1b7214866eca
 
 ### Windows
 1. Abre tu consola (PowerShell o CMD).
@@ -72,15 +96,23 @@ Asegúrate de tener **Git** y **Python 3** instalados en tu sistema antes de com
    ```bash
    git clone https://github.com/Baldallo15/Friz_Descargas.git
    ```
+<<<<<<< HEAD
 3. Instala las dependencias y ejecuta el script:
    ```bash
    cd Friz_Descargas
    pip install -r requirements.txt
    python friz.py
+=======
+3. Navega al directorio y ejecuta el script:
+   ```bash
+   cd Friz_Descargas
+   python main.py
+>>>>>>> a55455ace6e1916f13d94d164a5e1b7214866eca
    ```
 
 ### Linux
 1. Abre tu terminal.
+<<<<<<< HEAD
 2. Clona, instala dependencias y ejecuta:
    ```bash
    git clone https://github.com/Baldallo15/Friz_Descargas.git
@@ -91,6 +123,17 @@ Asegúrate de tener **Git** y **Python 3** instalados en tu sistema antes de com
 
 ### Termux
 Si lo estás utilizando desde un dispositivo Android:
+=======
+2. Clona y ejecuta:
+   ```bash
+   git clone https://github.com/Baldallo15/Friz_Descargas.git
+   cd Friz_Descargas
+   python3 main.py
+   ```
+
+### Termux
+Si lo estqs utilizando desde un dispositivo Android:
+>>>>>>> a55455ace6e1916f13d94d164a5e1b7214866eca
 ```bash
 pkg update && pkg upgrade
 pkg install git python
@@ -108,18 +151,32 @@ Una vez ejecutado el script, simplemente sigue las instrucciones interactivas en
 Ingresa los enlaces que deseas descargar y deja que **Friz** haga su magia.
 
 ```bash
+<<<<<<< HEAD
 # Comando básico de ejecución
 python friz.py
+=======
+# Comando bqsico de ejecucion
+python friz.py 
+>>>>>>> a55455ace6e1916f13d94d164a5e1b7214866eca
 ```
 
 ---
 
+<<<<<<< HEAD
 ## Contribución
 
 ¡Las contribuciones son bienvenidas! Si deseas mejorar este proyecto:
 1. Haz un *Fork* del repositorio.
 2. Crea una rama para tu función (`git checkout -b feature/NuevaFuncion`).
 3. Confirma tus cambios (`git commit -m 'Añadir nueva función'`).
+=======
+## Contribucion
+
+Las contribuciones son bienvenidas! Si deseas mejorar este proyecto:
+1. Haz un *Fork* del repositorio.
+2. Crea una rama para tu funcion (`git checkout -b feature/NuevaFuncion`).
+3. Confirma tus cambios (`git commit -m 'Añadir nueva funcion'`).
+>>>>>>> a55455ace6e1916f13d94d164a5e1b7214866eca
 4. Sube los cambios (`git push origin feature/NuevaFuncion`).
 5. Abre un *Pull Request*.
 
@@ -131,11 +188,19 @@ python friz.py
 
 ## Licencia
 
+<<<<<<< HEAD
 Este proyecto está bajo la Licencia **MIT**. Consulta el archivo [`LICENSE`](./LICENSE) para más detalles.
+=======
+Este proyecto estÃ¡ bajo la Licencia **MIT**. Consulta el archivo `LICENSE` para mas detalles.
+>>>>>>> a55455ace6e1916f13d94d164a5e1b7214866eca
 
 ---
 <div align="center">
   <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&height=100&section=footer" width="100%"/>
   <br>
+<<<<<<< HEAD
   <i>Hecho con Cariño por <a href="https://github.com/Baldallo15">Baldallo15</a></i>
+=======
+  <i>Hecho con Cariño¸ por <a href="https://github.com/Baldallo15">Baldallo15</a></i>
+>>>>>>> a55455ace6e1916f13d94d164a5e1b7214866eca
 </div>

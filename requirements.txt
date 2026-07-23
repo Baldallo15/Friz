@@ -1,4 +1,5 @@
 # --- Descarga de contenido multimedia ---
+<<<<<<< HEAD
 yt-dlp>=2025.1.1,<2026.0.0
 spotdl>=4.2.0,<5.0.0
 
@@ -9,3 +10,21 @@ rich>=13.7.0,<14.0.0
 pydantic>=1.10.0,<2.0.0
 setuptools>=69.0.0
 wheel>=0.42.0
+=======
+yt-dlp
+spotdl
+
+# --- Peticiones HTTP y Red ---
+requests
+certifi
+urllib3
+
+# --- Interfaz de consola y utilidades de imagen ---
+colorama
+pillow
+rich
+# --- Compatibilidad con Termux / Pydantic (Evita errores de compilación con Rust) ---
+pydantic>=1.10.0,<2.0.0
+setuptools
+wheel
+>>>>>>> a55455ace6e1916f13d94d164a5e1b7214866eca
