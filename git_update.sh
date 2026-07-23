@@ -241,4 +241,4 @@ git push -u origin main
 echo ""
 echo "✅ ¡Proceso completado con éxito!"
 echo "🔗 Repositorio disponible en: https://github.com/${USERNAME}/${REPO_NAME}"
->>>>>>> a55455ace6e1916f13d94d164a5e1b7214866eca
+
