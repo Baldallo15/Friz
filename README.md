@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <div align="center">
   <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&height=200&section=header&text=Friz%20Universal%20Multi-Downloader&fontSize=45&animation=fadeIn" alt="Banner Friz">
 </div>
@@ -139,3 +140,7 @@ Este proyecto está bajo la Licencia **MIT**. Consulta el archivo [`LICENSE`](./
   <br>
   <i>Hecho con Cariño por <a href="https://github.com/Baldallo15">Baldallo15</a></i>
 </div>
+=======
+# Friz
+Script Multi-Descargas de plataformas 
+>>>>>>> 5ba3ee95de23565def6f0dc955c8cd355c06dc27
