@@ -9,7 +9,10 @@ from rich.text import Text
 from rich.align import Align
 
 # Importación de los módulos organizados
+<<<<<<< HEAD
 from modules.validator import validar_url_para_plataforma
+=======
+>>>>>>> 4b20fc58dc5fd25b7902ceefb9a03314a0a027ef
 from modules.youtube import YoutubeDownloader
 from modules.spotify import SpotifyDownloader
 from modules.tiktok import TikTokDownloader
@@ -110,6 +113,7 @@ def main():
 
         console.print(f"\n[bold bright_cyan]>>> MÓDULO SELECCIONADO:[/] {icono} [bold white]{nombre_plataforma}[/]")
         url = Prompt.ask(f"[bold bright_yellow]🔗 Ingresa la URL objetivo[/]").strip()
+<<<<<<< HEAD
 
         # Validación de la URL antes de intentar cualquier descarga
         url_valida, mensaje_error = validar_url_para_plataforma(url, nombre_plataforma)
@@ -117,6 +121,11 @@ def main():
             console.print(f"[bold red]❌ URL INVÁLIDA:[/] {mensaje_error}")
             Prompt.ask("\n[bold cyan]Presiona ENTER para refrescar la interfaz...[/]")
             console.clear()
+=======
+        
+        if not url:
+            console.print("[bold red]❌ La URL no puede estar vacía.[/]")
+>>>>>>> 4b20fc58dc5fd25b7902ceefb9a03314a0a027ef
             continue
 
         # Instancia el módulo modularizado de forma aislada
