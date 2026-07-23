@@ -1,0 +1,17 @@
+# --- Descarga de contenido multimedia ---
+yt-dlp
+spotdl
+
+# --- Peticiones HTTP y Red ---
+requests
+certifi
+urllib3
+
+# --- Interfaz de consola y utilidades de imagen ---
+colorama
+pillow
+rich
+# --- Compatibilidad con Termux / Pydantic (Evita errores de compilación con Rust) ---
+pydantic>=1.10.0,<2.0.0
+setuptools
+wheel
