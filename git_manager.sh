@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ==============================================================================
-#  G I T   M A N A G E R   P R O  •  Ultra Fast & Versatile CLI
+#  G I T   M A N A G E R   P R O  •  Ultra Fast & Versatile CLI (Main Branch)
 # ==============================================================================
 
 # Limpiar posibles saltos de línea incompatibles (CRLF de Windows)
@@ -61,7 +61,7 @@ show_banner
 # 1. Menú de Acción Principal
 # ------------------------------------------------------------------------------
 echo -e "${COLOR_PRIMARY}[🎯 ¿Qué deseas hacer hoy?]${COLOR_RESET}"
-echo -e "  ${COLOR_ACCENT}1)${COLOR_RESET} Subir / Actualizar cambios (Push)"
+echo -e "  ${COLOR_ACCENT}1)${COLOR_RESET} Subir / Actualizar cambios (Push a main)"
 echo -e "  ${COLOR_ACCENT}2)${COLOR_RESET} Eliminar archivo o carpeta del repositorio"
 read -p "$(echo -e ${COLOR_MUTED}"Selecciona una opción [1/2, Por defecto: 1]: "${COLOR_RESET})" ACTION_OPT
 ACTION_OPT=${ACTION_OPT:-1}
@@ -89,8 +89,6 @@ read -p "$(echo -e ${COLOR_ACCENT}"Pega la URL del repo o escribe el nombre [Por
 if [ -z "$REPO_INPUT" ]; then
     REPO_NAME="$CURRENT_DIR"
 elif [[ "$REPO_INPUT" == *"github.com"* ]]; then
-    # Extraer el nombre del repositorio si pegaron una URL de GitHub completa
-    # Ej: https://github.com/usuario/mi-repo.git -> mi-repo
     REPO_NAME=$(basename "$REPO_INPUT" .git)
 else
     REPO_NAME="$REPO_INPUT"
@@ -123,12 +121,13 @@ echo ""
 echo -e "\n${COLOR_MUTED}──────────────────────────────────────────────────────────${COLOR_RESET}"
 
 # ------------------------------------------------------------------------------
-# 6. Ejecución Optimizada de Git
+# 6. Ejecución Optimizada de Git (Forzar a rama MAIN)
 # ------------------------------------------------------------------------------
 [ ! -d ".git" ] && { git init > /dev/null 2>&1; echo -e "${COLOR_SUCCESS}✔${COLOR_RESET} Repo local inicializado."; }
 
-CURRENT_BRANCH=$(git branch --show-current)
-[ -z "$CURRENT_BRANCH" ] && { git branch -M main > /dev/null 2>&1; CURRENT_BRANCH="main"; }
+# Renombrar obligatoriamente la rama actual a main
+git branch -M main > /dev/null 2>&1
+TARGET_BRANCH="main"
 
 REMOTE_AUTH_URL="https://${USERNAME}:${TOKEN}@github.com/${USERNAME}/${REPO_NAME}.git"
 REMOTE_CLEAN_URL="https://github.com/${USERNAME}/${REPO_NAME}.git"
@@ -146,12 +145,12 @@ else
     (git add . && (git status --porcelain | grep -q . && git commit -m "$COMMIT_MSG" || true)) > /dev/null 2>&1 &
     run_with_spinner $! "Empaquetando y commiteando cambios"
 
-    (git pull origin "$CURRENT_BRANCH" --allow-unrelated-histories --no-rebase > /dev/null 2>&1) &
-    run_with_spinner $! "Sincronizando con remoto ($CURRENT_BRANCH)" || true
+    (git pull origin "$TARGET_BRANCH" --allow-unrelated-histories --no-rebase > /dev/null 2>&1) &
+    run_with_spinner $! "Sincronizando con remoto ($TARGET_BRANCH)" || true
 fi
 
-(git push -u origin "$CURRENT_BRANCH" > /dev/null 2>&1) &
-run_with_spinner $! "Desplegando en GitHub"
+(git push -u origin "$TARGET_BRANCH" > /dev/null 2>&1) &
+run_with_spinner $! "Desplegando en GitHub (main)"
 
 git remote set-url origin "$REMOTE_CLEAN_URL" > /dev/null 2>&1
 
@@ -160,5 +159,5 @@ git remote set-url origin "$REMOTE_CLEAN_URL" > /dev/null 2>&1
 # ------------------------------------------------------------------------------
 echo -e "\n${COLOR_MUTED}──────────────────────────────────────────────────────────${COLOR_RESET}"
 echo -e "${COLOR_SUCCESS}${BOLD}🎉 ¡OPERACIÓN EXITOSA!${COLOR_RESET}"
-echo -e "${COLOR_PRIMARY}📦 Repo:${COLOR_RESET} $REPO_NAME (${COLOR_MUTED}$CURRENT_BRANCH${COLOR_RESET})"
+echo -e "${COLOR_PRIMARY}📦 Repo:${COLOR_RESET} $REPO_NAME (${COLOR_MUTED}$TARGET_BRANCH${COLOR_RESET})"
 echo -e "${COLOR_PRIMARY}🔗 Enlace:${COLOR_RESET} ${COLOR_ACCENT}https://github.com/${USERNAME}/${REPO_NAME}${COLOR_RESET}\n"
