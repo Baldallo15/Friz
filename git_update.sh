@@ -20,7 +20,6 @@ COMMIT_MSG=${COMMIT_MSG:-"Initial commit"}
 if [ ! -d ".git" ]; then
     echo "📌 Inicializando repositorio Git local..."
     git init
-    git branch -M main
 fi
 
 # 3. Preparar archivos y hacer commit
@@ -35,20 +34,33 @@ else
     echo "ℹ️ No hay cambios nuevos para commitear. Continuando..."
 fi
 
-# 4. Configurar la URL del remoto usando la autenticación por TOKEN
-REMOTE_URL="https://${TOKEN}@github.com/${USERNAME}/${REPO_NAME}.git"
+# 4. Obtener la rama actual activamente (evita errores entre master/main)
+CURRENT_BRANCH=$(git branch --show-current)
+
+# Si por alguna razón la rama no tiene nombre todavía, asignar 'main' por defecto
+if [ -z "$CURRENT_BRANCH" ]; then
+    git branch -M main
+    CURRENT_BRANCH="main"
+fi
+
+# 5. Configurar la URL del remoto usando la autenticación por TOKEN
+REMOTE_AUTH_URL="https://${USERNAME}:${TOKEN}@github.com/${USERNAME}/${REPO_NAME}.git"
+REMOTE_CLEAN_URL="https://github.com/${USERNAME}/${REPO_NAME}.git"
 
 if git remote | grep -q "^origin$"; then
     echo "🔄 Actualizando la URL del remoto 'origin'..."
-    git remote set-url origin "$REMOTE_URL"
+    git remote set-url origin "$REMOTE_AUTH_URL"
 else
     echo "🔗 Añadiendo remoto 'origin'..."
-    git remote add origin "$REMOTE_URL"
+    git remote add origin "$REMOTE_AUTH_URL"
 fi
 
-# 5. Subir repositorio a GitHub
-echo "🚀 Subiendo cambios a GitHub..."
-git push -u origin main
+# 6. Subir repositorio a GitHub detectando la rama dinámica
+echo "🚀 Subiendo cambios a GitHub en la rama '$CURRENT_BRANCH'..."
+git push -u origin "$CURRENT_BRANCH"
+
+# 7. Limpieza de seguridad: quitar el Token del remoto guardado
+git remote set-url origin "$REMOTE_CLEAN_URL"
 
 echo ""
 echo "✅ ¡Proceso completado con éxito!"
