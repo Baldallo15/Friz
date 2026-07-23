@@ -4,6 +4,11 @@
 #  G I T   M A N A G E R   P R O  •  Ultra Fast & Versatile CLI
 # ==============================================================================
 
+# Limpiar posibles saltos de línea incompatibles (CRLF de Windows)
+if [ -f "$0" ]; then
+    sed -i -e 's/\r$//' "$0" 2>/dev/null || true
+fi
+
 COLOR_RESET="\033[0m"
 COLOR_PRIMARY="\033[38;5;39m"
 COLOR_SECONDARY="\033[38;5;141m"
@@ -16,7 +21,6 @@ BOLD="\033[1m"
 CONFIG_FILE="$HOME/.github_uploader.cfg"
 CURRENT_DIR=$(basename "$PWD")
 
-# Banner Dinámico Compacto y Elegante
 show_banner() {
     clear
     echo -e "${COLOR_PRIMARY}${BOLD}   ____ ___ _____   __  __                             "
@@ -77,17 +81,25 @@ fi
 echo "USERNAME=$USERNAME" > "$CONFIG_FILE"
 
 # ------------------------------------------------------------------------------
-# 3. Nombre del Repositorio (Detección inteligente de carpeta actual)
+# 3. Nombre del Repositorio o URL Completa (Pegar Directo)
 # ------------------------------------------------------------------------------
-echo -e "${COLOR_PRIMARY}[📦 Repositorio]${COLOR_RESET}"
-read -p "$(echo -e ${COLOR_ACCENT}"Nombre del repo [Por defecto: ${CURRENT_DIR}]: "${COLOR_RESET})" REPO_NAME
-REPO_NAME=${REPO_NAME:-$CURRENT_DIR}
+echo -e "\n${COLOR_PRIMARY}[📦 Repositorio]${COLOR_RESET}"
+read -p "$(echo -e ${COLOR_ACCENT}"Pega la URL del repo o escribe el nombre [Por defecto: ${CURRENT_DIR}]: "${COLOR_RESET})" REPO_INPUT
+
+if [ -z "$REPO_INPUT" ]; then
+    REPO_NAME="$CURRENT_DIR"
+elif [[ "$REPO_INPUT" == *"github.com"* ]]; then
+    # Extraer el nombre del repositorio si pegaron una URL de GitHub completa
+    # Ej: https://github.com/usuario/mi-repo.git -> mi-repo
+    REPO_NAME=$(basename "$REPO_INPUT" .git)
+else
+    REPO_NAME="$REPO_INPUT"
+fi
 
 # ------------------------------------------------------------------------------
-# 4. Acciones Específicas según la Opción Elegida
+# 4. Acciones Específicas
 # ------------------------------------------------------------------------------
 if [ "$ACTION_OPT" == "2" ]; then
-    # MODO ELIMINAR
     echo -e "\n${COLOR_DANGER}[🗑️ Eliminación]${COLOR_RESET}"
     read -p "$(echo -e ${COLOR_ACCENT}"Ruta del archivo/carpeta a borrar: "${COLOR_RESET})" TARGET_PATH
     [ -z "$TARGET_PATH" ] && { echo -e "${COLOR_DANGER}Ruta vacía. Saliendo.${COLOR_RESET}"; exit 1; }
@@ -95,7 +107,6 @@ if [ "$ACTION_OPT" == "2" ]; then
     read -p "$(echo -e ${COLOR_MUTED}"Mensaje de commit [Por defecto: 'Delete ${TARGET_PATH}']: "${COLOR_RESET})" COMMIT_MSG
     COMMIT_MSG=${COMMIT_MSG:-"Delete ${TARGET_PATH}"}
 else
-    # MODO SUBIR / ACTUALIZAR
     echo -e "\n${COLOR_PRIMARY}[💬 Sincronización]${COLOR_RESET}"
     read -p "$(echo -e ${COLOR_MUTED}"Mensaje de commit [Por defecto: 'update']: "${COLOR_RESET})" COMMIT_MSG
     COMMIT_MSG=${COMMIT_MSG:-"update"}
@@ -113,7 +124,7 @@ echo -e "\n${COLOR_MUTED}──────────────────�
 
 # ------------------------------------------------------------------------------
 # 6. Ejecución Optimizada de Git
-# ----------------Center------------------------------------------------------
+# ------------------------------------------------------------------------------
 [ ! -d ".git" ] && { git init > /dev/null 2>&1; echo -e "${COLOR_SUCCESS}✔${COLOR_RESET} Repo local inicializado."; }
 
 CURRENT_BRANCH=$(git branch --show-current)
@@ -129,11 +140,9 @@ else
 fi
 
 if [ "$ACTION_OPT" == "2" ]; then
-    # Ejecutar borrado
     (git rm -rf "$TARGET_PATH" && git commit -m "$COMMIT_MSG") > /dev/null 2>&1 &
     run_with_spinner $! "Eliminando e indexando archivos"
 else
-    # Ejecutar subida / actualización
     (git add . && (git status --porcelain | grep -q . && git commit -m "$COMMIT_MSG" || true)) > /dev/null 2>&1 &
     run_with_spinner $! "Empaquetando y commiteando cambios"
 
@@ -141,11 +150,9 @@ else
     run_with_spinner $! "Sincronizando con remoto ($CURRENT_BRANCH)" || true
 fi
 
-# Push final unificado
 (git push -u origin "$CURRENT_BRANCH" > /dev/null 2>&1) &
 run_with_spinner $! "Desplegando en GitHub"
 
-# Limpieza estricta de credenciales en local
 git remote set-url origin "$REMOTE_CLEAN_URL" > /dev/null 2>&1
 
 # ------------------------------------------------------------------------------
