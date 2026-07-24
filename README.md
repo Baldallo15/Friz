@@ -139,3 +139,7 @@ Este proyecto está bajo la Licencia **MIT**. Consulta el archivo [`LICENSE`](./
   <br>
   <i>Hecho con Cariño por <a href="https://github.com/Baldallo15">Baldallo15</a></i>
 </div>
+<<<<<<< HEAD
+=======
+
+>>>>>>> 4e0e391558d45ee6447b8519bd1f5925baa223c5

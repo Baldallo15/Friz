@@ -9,7 +9,18 @@ from rich.text import Text
 from rich.align import Align
 
 # Importación de los módulos organizados
+<<<<<<< HEAD
 from modules.validator import validar_url_para_plataforma
+=======
+<<<<<<< HEAD
+from modules.validator import validar_url_para_plataforma
+=======
+<<<<<<< HEAD
+from modules.validator import validar_url_para_plataforma
+=======
+>>>>>>> 4b20fc58dc5fd25b7902ceefb9a03314a0a027ef
+>>>>>>> 64b3b077993957ed661f7ea185ea0dd22a8a9559
+>>>>>>> 4e0e391558d45ee6447b8519bd1f5925baa223c5
 from modules.youtube import YoutubeDownloader
 from modules.spotify import SpotifyDownloader
 from modules.tiktok import TikTokDownloader
@@ -110,6 +121,13 @@ def main():
 
         console.print(f"\n[bold bright_cyan]>>> MÓDULO SELECCIONADO:[/] {icono} [bold white]{nombre_plataforma}[/]")
         url = Prompt.ask(f"[bold bright_yellow]🔗 Ingresa la URL objetivo[/]").strip()
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> 64b3b077993957ed661f7ea185ea0dd22a8a9559
+>>>>>>> 4e0e391558d45ee6447b8519bd1f5925baa223c5
 
         # Validación de la URL antes de intentar cualquier descarga
         url_valida, mensaje_error = validar_url_para_plataforma(url, nombre_plataforma)
@@ -117,10 +135,28 @@ def main():
             console.print(f"[bold red]❌ URL INVÁLIDA:[/] {mensaje_error}")
             Prompt.ask("\n[bold cyan]Presiona ENTER para refrescar la interfaz...[/]")
             console.clear()
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+=======
+        
+        if not url:
+            console.print("[bold red]❌ La URL no puede estar vacía.[/]")
+>>>>>>> 4b20fc58dc5fd25b7902ceefb9a03314a0a027ef
+>>>>>>> 64b3b077993957ed661f7ea185ea0dd22a8a9559
+>>>>>>> 4e0e391558d45ee6447b8519bd1f5925baa223c5
             continue
 
         # Instancia el módulo modularizado de forma aislada
         handler = handler_class()
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> 64b3b077993957ed661f7ea185ea0dd22a8a9559
+>>>>>>> 4e0e391558d45ee6447b8519bd1f5925baa223c5
 
         try:
             # download_seguro() vuelve a validar la URL dentro del propio
@@ -130,6 +166,19 @@ def main():
                 console.print(f"\n[bold red]⚠️ El módulo {nombre_plataforma} reportó una interrupción.[/]")
         except KeyboardInterrupt:
             console.print(f"\n[bold yellow]⏸ Descarga cancelada por el usuario.[/]")
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+=======
+        
+        try:
+            exito = handler.download(url)
+            if not exito:
+                console.print(f"\n[bold red]⚠️ El módulo {nombre_plataforma} reportó una interrupción.[/]")
+>>>>>>> a55455ace6e1916f13d94d164a5e1b7214866eca
+>>>>>>> 64b3b077993957ed661f7ea185ea0dd22a8a9559
+>>>>>>> 4e0e391558d45ee6447b8519bd1f5925baa223c5
         except Exception as e:
             console.print(f"\n[bold red]💥 Error no controlado en {nombre_plataforma}: {e}[/]")
 
