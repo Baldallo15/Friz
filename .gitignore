@@ -1,0 +1,26 @@
+# Bytecode y cachés de Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Entornos virtuales
+.venv/
+venv/
+env/
+
+# Empaquetado
+*.egg-info/
+dist/
+build/
+
+# Logs de la aplicación (ver modules/base.py -> ~/.friz/logs)
+*.log
+
+# Archivos de entorno / configuración local
+.env
+.friz.toml
+
+# Editor / SO
+.vscode/
+.idea/
+.DS_Store
