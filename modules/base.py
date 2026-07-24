@@ -1,8 +1,4 @@
 # modules/base.py
-<<<<<<< HEAD
-=======
-
->>>>>>> 4e0e391558d45ee6447b8519bd1f5925baa223c5
 """
 Módulo base de FRIZ.
 
@@ -16,46 +12,18 @@ Contiene:
    Twitter/X, Pinterest).
 """
 import logging
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
-=======
->>>>>>> a55455ace6e1916f13d94d164a5e1b7214866eca
->>>>>>> 64b3b077993957ed661f7ea185ea0dd22a8a9559
->>>>>>> 4e0e391558d45ee6447b8519bd1f5925baa223c5
 import os
 import platform
 import subprocess
 from abc import ABC, abstractmethod
-<<<<<<< HEAD
 from pathlib import Path
 
-=======
-<<<<<<< HEAD
-from pathlib import Path
-
-=======
-<<<<<<< HEAD
-from pathlib import Path
-
-=======
->>>>>>> a55455ace6e1916f13d94d164a5e1b7214866eca
->>>>>>> 64b3b077993957ed661f7ea185ea0dd22a8a9559
->>>>>>> 4e0e391558d45ee6447b8519bd1f5925baa223c5
 from rich.console import Console
 from rich.panel import Panel
 from rich.prompt import Prompt
 from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TimeRemainingColumn
 from rich.align import Align
 
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> 64b3b077993957ed661f7ea185ea0dd22a8a9559
->>>>>>> 4e0e391558d45ee6447b8519bd1f5925baa223c5
 from modules.validator import validar_url_para_plataforma
 
 console = Console()
@@ -74,16 +42,6 @@ if not logger.handlers:
     _handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s"))
     logger.addHandler(_handler)
 
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
-=======
-console = Console()
-
->>>>>>> a55455ace6e1916f13d94d164a5e1b7214866eca
->>>>>>> 64b3b077993957ed661f7ea185ea0dd22a8a9559
->>>>>>> 4e0e391558d45ee6447b8519bd1f5925baa223c5
 # Mapa ASCII compacto de Venezuela
 MAPA_VENEZUELA_ASCII = """[bold yellow]
       ▄▄▄▄▄▄▄▄▄▄
@@ -95,13 +53,6 @@ MAPA_VENEZUELA_ASCII = """[bold yellow]
          ▀██▀
 [/]"""
 
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> 64b3b077993957ed661f7ea185ea0dd22a8a9559
->>>>>>> 4e0e391558d45ee6447b8519bd1f5925baa223c5
 
 class BaseDownloader(ABC):
     """Clase base abstracta para todos los descargadores de plataforma.
@@ -115,39 +66,13 @@ class BaseDownloader(ABC):
     #: `modules.validator.DOMINIOS_PERMITIDOS`. Las subclases lo sobreescriben.
     PLATAFORMA: str = ""
 
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
-=======
-class BaseDownloader(ABC):
->>>>>>> a55455ace6e1916f13d94d164a5e1b7214866eca
->>>>>>> 64b3b077993957ed661f7ea185ea0dd22a8a9559
->>>>>>> 4e0e391558d45ee6447b8519bd1f5925baa223c5
     def __init__(self):
         self.output_dir = self._obtener_y_preparar_ruta()
 
     def _obtener_y_preparar_ruta(self) -> str:
-<<<<<<< HEAD
         """Determina y crea (si hace falta) la carpeta de descargas de Friz."""
         home = os.path.expanduser("~")
 
-=======
-<<<<<<< HEAD
-        """Determina y crea (si hace falta) la carpeta de descargas de Friz."""
-        home = os.path.expanduser("~")
-
-=======
-<<<<<<< HEAD
-        """Determina y crea (si hace falta) la carpeta de descargas de Friz."""
-        home = os.path.expanduser("~")
-
-=======
-        home = os.path.expanduser("~")
-        
->>>>>>> a55455ace6e1916f13d94d164a5e1b7214866eca
->>>>>>> 64b3b077993957ed661f7ea185ea0dd22a8a9559
->>>>>>> 4e0e391558d45ee6447b8519bd1f5925baa223c5
         if "TERMUX_VERSION" in os.environ:
             base_download = "/sdcard/Download"
         elif platform.system() == "Windows":
@@ -161,65 +86,22 @@ class BaseDownloader(ABC):
             try:
                 os.makedirs(friz_dir, exist_ok=True)
                 console.print(f"[bold cyan]⚡ SYSTEM:[/] Directorio cibernético montado en: [bold magenta]{friz_dir}[/]")
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> 64b3b077993957ed661f7ea185ea0dd22a8a9559
->>>>>>> 4e0e391558d45ee6447b8519bd1f5925baa223c5
                 logger.info("Directorio de descargas creado en %s", friz_dir)
             except OSError as e:
                 console.print(f"[bold red]❌ ERROR SYSTEM:[/] No se pudo crear el directorio {friz_dir}: {e}")
                 logger.error("No se pudo crear el directorio %s: %s", friz_dir, e)
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
-=======
-            except Exception as e:
-                console.print(f"[bold red]❌ ERROR SYSTEM:[/] No se pudo crear el directorio {friz_dir}: {e}")
->>>>>>> a55455ace6e1916f13d94d164a5e1b7214866eca
->>>>>>> 64b3b077993957ed661f7ea185ea0dd22a8a9559
->>>>>>> 4e0e391558d45ee6447b8519bd1f5925baa223c5
                 return "."
 
         return friz_dir
 
     def mostrar_banner_exito(self):
-<<<<<<< HEAD
         """Despliega el mini banner con el mapa de Venezuela y el estado de descarga."""
-=======
-<<<<<<< HEAD
-        """Despliega el mini banner con el mapa de Venezuela y el estado de descarga."""
-=======
-<<<<<<< HEAD
-        """Despliega el mini banner con el mapa de Venezuela y el estado de descarga."""
-=======
-        """
-        Despliega el mini banner con el mapa de Venezuela y el estado de descarga.
-        """
->>>>>>> a55455ace6e1916f13d94d164a5e1b7214866eca
->>>>>>> 64b3b077993957ed661f7ea185ea0dd22a8a9559
->>>>>>> 4e0e391558d45ee6447b8519bd1f5925baa223c5
         contenido = (
             f"{MAPA_VENEZUELA_ASCII}\n"
             f"[bold bright_green]✔ DESCARGA COMPLETADA CON ÉXITO[/]\n"
             f"[bold bright_cyan]💾 Guardado en:[/] [bold bright_yellow]{self.output_dir}[/]"
         )
-<<<<<<< HEAD
 
-=======
-<<<<<<< HEAD
-
-=======
-<<<<<<< HEAD
-
-=======
-        
->>>>>>> a55455ace6e1916f13d94d164a5e1b7214866eca
->>>>>>> 64b3b077993957ed661f7ea185ea0dd22a8a9559
->>>>>>> 4e0e391558d45ee6447b8519bd1f5925baa223c5
         console.print(Panel(
             Align.center(contenido),
             title="[bold yellow]★[/] [bold blue]FRIZ[/] [bold red]VENEZUELA[/] [bold yellow]★[/]",
@@ -227,18 +109,7 @@ class BaseDownloader(ABC):
         ))
 
     def seleccionar_calidad(self) -> str:
-<<<<<<< HEAD
         """Muestra el menú de resolución/calidad y devuelve el selector de formato de yt-dlp."""
-=======
-<<<<<<< HEAD
-        """Muestra el menú de resolución/calidad y devuelve el selector de formato de yt-dlp."""
-=======
-<<<<<<< HEAD
-        """Muestra el menú de resolución/calidad y devuelve el selector de formato de yt-dlp."""
-=======
->>>>>>> a55455ace6e1916f13d94d164a5e1b7214866eca
->>>>>>> 64b3b077993957ed661f7ea185ea0dd22a8a9559
->>>>>>> 4e0e391558d45ee6447b8519bd1f5925baa223c5
         texto_menu = (
             "[bold cyan]1.[/] 🚀 [bold magenta]MÁXIMA CALIDAD[/] (Best Available)\n"
             "[bold cyan]2.[/] 📺 [bold bright_blue]ULTRA HD[/] (1080p)\n"
@@ -246,37 +117,13 @@ class BaseDownloader(ABC):
             "[bold cyan]4.[/] 📱 [bold yellow]AHORRO DATOS[/] PARA POBRES :( (480p / 360p)\n"
             "[bold cyan]5.[/] 🎵 [bold red]SOLO AUDIO[/] (MP3 / High Quality)"
         )
-<<<<<<< HEAD
 
-=======
-<<<<<<< HEAD
-
-=======
-<<<<<<< HEAD
-
-=======
-        
->>>>>>> a55455ace6e1916f13d94d164a5e1b7214866eca
->>>>>>> 64b3b077993957ed661f7ea185ea0dd22a8a9559
->>>>>>> 4e0e391558d45ee6447b8519bd1f5925baa223c5
         console.print(Panel(
             texto_menu,
             title="[bold magenta]⚡ CONFIGURACIÓN DE RESOLUCIÓN ⚡[/]",
             border_style="bright_cyan"
         ))
-<<<<<<< HEAD
 
-=======
-<<<<<<< HEAD
-
-=======
-<<<<<<< HEAD
-
-=======
-        
->>>>>>> a55455ace6e1916f13d94d164a5e1b7214866eca
->>>>>>> 64b3b077993957ed661f7ea185ea0dd22a8a9559
->>>>>>> 4e0e391558d45ee6447b8519bd1f5925baa223c5
         opcion = Prompt.ask("[bold bright_magenta]FRIZ-NET[/] Selecciona calidad", choices=["1", "2", "3", "4", "5"], default="1")
 
         if opcion == "2":
@@ -291,27 +138,12 @@ class BaseDownloader(ABC):
             return "bestvideo+bestaudio/best"
 
     def ejecutar_comando_animado(self, cmd: list, mensaje_modulo: str) -> bool:
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> 64b3b077993957ed661f7ea185ea0dd22a8a9559
->>>>>>> 4e0e391558d45ee6447b8519bd1f5925baa223c5
         """Ejecuta un comando externo (yt-dlp/spotdl) mostrando progreso animado.
 
         Usa `subprocess.Popen` con `cmd` como lista de argumentos (sin
         `shell=True`), lo que evita inyección de comandos vía shell.
         """
         logger.info("Ejecutando comando para %s: %s", mensaje_modulo, " ".join(cmd))
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
-=======
->>>>>>> a55455ace6e1916f13d94d164a5e1b7214866eca
->>>>>>> 64b3b077993957ed661f7ea185ea0dd22a8a9559
->>>>>>> 4e0e391558d45ee6447b8519bd1f5925baa223c5
         try:
             with Progress(
                 SpinnerColumn("dots12", style="bold magenta"),
@@ -321,29 +153,10 @@ class BaseDownloader(ABC):
                 TimeRemainingColumn(),
                 console=console
             ) as progress:
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> 64b3b077993957ed661f7ea185ea0dd22a8a9559
->>>>>>> 4e0e391558d45ee6447b8519bd1f5925baa223c5
 
                 task = progress.add_task(f"[bold bright_cyan]Procesando {mensaje_modulo}...[/]", total=None)
                 process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
 
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
-=======
-                
-                task = progress.add_task(f"[bold bright_cyan]Procesando {mensaje_modulo}...[/]", total=None)
-                process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
-                
->>>>>>> a55455ace6e1916f13d94d164a5e1b7214866eca
->>>>>>> 64b3b077993957ed661f7ea185ea0dd22a8a9559
->>>>>>> 4e0e391558d45ee6447b8519bd1f5925baa223c5
                 for line in process.stdout:
                     if "%" in line or "ETA" in line or "download" in line.lower():
                         progress.update(task, description=f"[bold magenta]⚡ Descargando flujo de {mensaje_modulo}...[/]")
@@ -353,13 +166,6 @@ class BaseDownloader(ABC):
                 if process.returncode == 0:
                     progress.update(task, completed=100)
                     console.print()
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> 64b3b077993957ed661f7ea185ea0dd22a8a9559
->>>>>>> 4e0e391558d45ee6447b8519bd1f5925baa223c5
                     self.mostrar_banner_exito()
                     logger.info("Descarga de %s completada con éxito.", mensaje_modulo)
                     return True
@@ -436,25 +242,3 @@ class YtDlpDownloader(BaseDownloader):
             url_limpia,
         ]
         return self.ejecutar_comando_animado(cmd, self.PLATAFORMA)
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
-=======
-                    # Muestra el mapa de Venezuela al finalizar la descarga
-                    self.mostrar_banner_exito()
-                    return True
-                else:
-                    console.print(f"\n[bold red]❌ [FALLO DE NODO] Error en la descarga.[/]")
-                    return False
-
-        except Exception as e:
-            console.print(f"[bold red]❌ [CRITICAL ERROR]:[/] {e}")
-            return False
-
-    @abstractmethod
-    def download(self, url: str) -> bool:
-        pass
->>>>>>> a55455ace6e1916f13d94d164a5e1b7214866eca
->>>>>>> 64b3b077993957ed661f7ea185ea0dd22a8a9559
->>>>>>> 4e0e391558d45ee6447b8519bd1f5925baa223c5
