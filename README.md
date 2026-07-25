@@ -2,7 +2,7 @@
   <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&height=250&section=header&text=Friz%20Universal%20Multi-Downloader&fontSize=50&animation=fadeIn&fontColor=ffffff&desc=Cyberpunk%20Multi-Platform%20Downloader&descColor=00F0FF" alt="Banner Friz">
 </div>
 
-<h1 align="center"><img src="https://github/Baldallo15/Friz_Descargas/main/fotos/logotipo.png" alt="Friz Logo" width="64" height="64" align="middle" /> Ffriz</h1>
+<h1 align="center"><img src="https://github/Baldallo15/Friz_Descargas/fotos/logotipo.png" alt="Friz Logo" width="64" height="64" align="middle" /> Friz</h1>
 
 <div align="center">
   <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=20&pause=1000&color=00F0FF&center=true&vCenter=true&width=500&lines=Universal+Multi-Downloader;Windows%2C+Linux+%26+Termux;Open-Source+%26+Free" alt="Typing SVG" />
