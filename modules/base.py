@@ -137,7 +137,7 @@ class BaseDownloader(ABC):
         else:
             return "bestvideo+bestaudio/best"
 
-    def ejecutar_comando_animado(self, cmd: list, mensaje_modulo: str) -> bool:
+    def ejecutar_comando_animado(self, cmd: list, mensaje_modulo: str, timeout: int = 1800) -> bool:
         """Ejecuta un comando externo (yt-dlp/spotdl) mostrando progreso animado.
 
         Usa `subprocess.Popen` con `cmd` como lista de argumentos (sin
@@ -157,11 +157,17 @@ class BaseDownloader(ABC):
                 task = progress.add_task(f"[bold bright_cyan]Procesando {mensaje_modulo}...[/]", total=None)
                 process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
 
-                for line in process.stdout:
-                    if "%" in line or "ETA" in line or "download" in line.lower():
-                        progress.update(task, description=f"[bold magenta]⚡ Descargando flujo de {mensaje_modulo}...[/]")
-
-                process.wait()
+                try:
+                    for line in process.stdout:
+                        if "%" in line or "ETA" in line or "download" in line.lower():
+                            progress.update(task, description=f"[bold magenta]⚡ Descargando flujo de {mensaje_modulo}...[/]")
+                    process.wait(timeout=timeout)
+                except subprocess.TimeoutExpired:
+                    process.kill()
+                    process.wait()
+                    console.print(f"\n[bold red]❌ [TIMEOUT] La descarga superó el tiempo límite de {timeout // 60} minutos.[/]")
+                    logger.error("Timeout tras %s segundos ejecutando %s", timeout, " ".join(cmd))
+                    return False
 
                 if process.returncode == 0:
                     progress.update(task, completed=100)
@@ -171,6 +177,7 @@ class BaseDownloader(ABC):
                     return True
                 else:
                     console.print(f"\n[bold red]❌ [FALLO DE NODO] Error en la descarga.[/]")
+                    console.print("[bold yellow]💡 Revisa los logs en ~/.friz/logs/friz.log para más detalles.[/]")
                     logger.warning("El comando de %s terminó con código %s", mensaje_modulo, process.returncode)
                     return False
 

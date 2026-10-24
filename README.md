@@ -146,8 +146,11 @@ Friz/
 ├── friz.py              # Punto de entrada principal (UI)
 ├── README.md            # Documentación del proyecto
 ├── requirements.txt     # Dependencias de Python
+├── pyproject.toml       # Configuración del proyecto
 ├── install.sh           # Instalador automatizado para Termux
+├── .github/workflows/   # CI con GitHub Actions
 ├── modules/
+│   ├── __init__.py      # Paquete de módulos
 │   ├── base.py          # Clase base y descargador genérico
 │   ├── validator.py     # Validación centralizada de URLs
 │   ├── youtube.py       # Módulo YouTube
@@ -157,6 +160,7 @@ Friz/
 │   ├── facebook.py      # Módulo Facebook
 │   ├── twitter.py       # Módulo X (Twitter)
 │   └── pinterest.py     # Módulo Pinterest
+├── scripts/             # Scripts de utilidad
 ├── tests/               # Suite de pruebas
 └── fotos/               # Recursos visuales
 ```
@@ -180,14 +184,9 @@ Friz/
 Este proyecto está bajo la Licencia **MIT**. Consulta el archivo [`LICENSE`](./LICENSE) para más detalles.
 
 ---
-<<<<<<< HEAD
 
-<div align="center">
-  <i>Hecho con ❤️ por <a href="https://github.com/Baldallo15">Baldallo15</a></i>
-=======
 <div align="center">
   <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&height=100&section=footer" width="100%"/>
   <br>
-  <i>Hecho con Cariño por <a href="https://github.com/Baldallo15">Baldallo15</a></i>
->>>>>>> bc95cffdd33b6b6b9965d47cc21b80690c04ada6
+  <i>Hecho con ❤️ por <a href="https://github.com/Baldallo15">Baldallo15</a></i>
 </div>

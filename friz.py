@@ -9,6 +9,7 @@ from rich.text import Text
 from rich.align import Align
 
 # Importación de los módulos organizados
+from modules import __version__
 from modules.validator import validar_url_para_plataforma
 from modules.youtube import YoutubeDownloader
 from modules.spotify import SpotifyDownloader
@@ -19,6 +20,8 @@ from modules.twitter import TwitterDownloader
 from modules.pinterest import PinterestDownloader
 
 console = Console()
+
+__version__ = __version__
 
 MODULE_MAP = {
     "1": ("YouTube", YoutubeDownloader, "🔴"),
@@ -70,7 +73,7 @@ def animacion_de_inicio():
             texto_animado += linea + "\n"
             banner_panel = Panel(
                 Align.center(Text(texto_animado, style="bold bright_magenta")),
-                subtitle="[bold bright_cyan]--- UNIVERSAL MULTI-DOWNLOADER v1.2.2 ---[/]",
+                subtitle=f"[bold bright_cyan]--- UNIVERSAL MULTI-DOWNLOADER v{__version__} ---[/]",
                 border_style="cyan"
             )
             live.update(banner_panel)
