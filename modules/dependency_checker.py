@@ -260,14 +260,25 @@ class DependencyChecker:
         console.print(table2)
         console.print("="*60 + "\n")
         
-        ffmpeg_ok, _ = self.check_ffmpeg()
-        if not ffmpeg_ok:
+        ffmpeg_ok, ffpath = self.check_ffmpeg()
+        if ffmpeg_ok and ffpath:
+            try:
+                result = subprocess.run([ffpath, '-version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=3)
+                out = (result.stdout + result.stderr).decode().lower()
+                if 'ffmpegthumbnailer' in out:
+                    console.print(Panel("[bold yellow]Nota: Usando modo compatible[/]\n"
+                                        "Sin ffmpeg real, se descargará en formato original (.webm/.opus).",
+                                        border_style="yellow"))
+                    return True
+            except:
+                pass
+            console.print(Panel("[bold green]✓ Entorno listo para funcionar correctamente[/]", border_style="green"))
+            return True
+        else:
             console.print(Panel("[bold yellow]Nota: Usando modo compatible sin conversión completa[/]\n"
                                 "Los archivos se descargarán en formato original cuando sea necesario.",
                                 border_style="yellow"))
-        else:
-            console.print(Panel("[bold green]✓ Entorno listo para funcionar correctamente[/]", border_style="green"))
-        return ffmpeg_ok
+            return True
 
 def verificar_dependencias(auto_instalar=True):
     checker = DependencyChecker()

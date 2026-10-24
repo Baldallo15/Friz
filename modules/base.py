@@ -416,3 +416,28 @@ class BaseDownloader:
 
 # Alias para compatibilidad con módulos existentes
 YtDlpDownloader = BaseDownloader
+
+
+    def tiene_ffmpeg_real(self):
+        """Verifica si hay un ffmpeg real (no ffmpegthumbnailer)"""
+        import shutil
+        local_bin = self.home / '.local' / 'bin'
+        candidates = [
+            local_bin / 'ffmpeg',
+            Path('/usr/bin/ffmpeg'),
+            Path('/usr/local/bin/ffmpeg'),
+        ]
+        ffp = shutil.which('ffmpeg')
+        if ffp:
+            candidates.append(Path(ffp))
+        for p in candidates:
+            try:
+                if p and os.path.exists(p) and os.access(p, os.X_OK):
+                    result = subprocess.run([str(p), '-version'], 
+                                          stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=3)
+                    out = (result.stdout + result.stderr).decode().lower()
+                    if 'ffmpeg version' in out and 'ffmpegthumbnailer' not in out:
+                        return True, str(p)
+            except:
+                continue
+        return False, None
