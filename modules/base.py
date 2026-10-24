@@ -17,6 +17,7 @@ import os
 import platform
 import re
 import subprocess
+import sys
 import tempfile
 from abc import ABC, abstractmethod
 from pathlib import Path
@@ -31,21 +32,28 @@ from rich.table import Table
 
 from modules.validator import validar_url_para_plataforma
 
-console = Console()
+console = Console(force_terminal=True)
 
 # --- Logging estructurado -------------------------------------------------
 # Además de la UI vistosa de `rich`, se registra cada ejecución en un
 # archivo de log rotativo, útil para depurar fallos reportados por
 # usuarios sin depender únicamente de lo que se vio en pantalla.
 LOG_DIR = Path.home() / ".friz" / "logs"
-LOG_DIR.mkdir(parents=True, exist_ok=True)
+try:
+    LOG_DIR.mkdir(parents=True, exist_ok=True)
+except Exception:
+    LOG_DIR = Path(tempfile.gettempdir()) / "friz" / "logs"
+    LOG_DIR.mkdir(parents=True, exist_ok=True)
 
 logger = logging.getLogger("friz")
 logger.setLevel(logging.INFO)
 if not logger.handlers:
-    _handler = logging.FileHandler(LOG_DIR / "friz.log", encoding="utf-8")
-    _handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s"))
-    logger.addHandler(_handler)
+    try:
+        _handler = logging.FileHandler(LOG_DIR / "friz.log", encoding="utf-8")
+        _handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s"))
+        logger.addHandler(_handler)
+    except Exception:
+        pass
 
 # Mapa ASCII compacto de Venezuela
 MAPA_VENEZUELA_ASCII = """[bold yellow]
@@ -77,12 +85,23 @@ class BaseDownloader(ABC):
     def _obtener_y_preparar_ruta(self) -> str:
         """Determina y crea (si hace falta) la carpeta de descargas de Friz."""
         home = os.path.expanduser("~")
+        sistema = platform.system()
 
-        if "TERMUX_VERSION" in os.environ:
-            base_download = "/sdcard/Download"
-        elif platform.system() == "Windows":
+        if "TERMUX_VERSION" in os.environ or os.environ.get("PREFIX", "").startswith("/data/data/com.termux"):
+            # Termux Android
+            if os.path.exists("/sdcard/Download"):
+                base_download = "/sdcard/Download"
+            elif os.path.exists("/storage/emulated/0/Download"):
+                base_download = "/storage/emulated/0/Download"
+            else:
+                base_download = os.path.join(home, "Downloads")
+        elif sistema == "Windows":
+            # Windows (7/8/10/11)
+            base_download = os.path.join(home, "Downloads")
+        elif sistema == "Darwin":
             base_download = os.path.join(home, "Downloads")
         else:
+            # Linux y otros
             base_download = os.path.join(home, "Downloads")
 
         friz_dir = os.path.join(base_download, "Friz")
@@ -95,8 +114,14 @@ class BaseDownloader(ABC):
             except OSError as e:
                 console.print(f"[bold red]❌ ERROR SYSTEM:[/] No se pudo crear el directorio {friz_dir}: {e}")
                 logger.error("No se pudo crear el directorio %s: %s", friz_dir, e)
-                return "."
-
+                # Intentar fallback en directorio actual
+                fallback = os.path.join(os.getcwd(), "Friz_Downloads")
+                try:
+                    os.makedirs(fallback, exist_ok=True)
+                    console.print(f"[bold yellow]⚠️ Usando directorio alternativo:[/] {fallback}")
+                    return fallback
+                except Exception:
+                    return "."
         return friz_dir
 
     def mostrar_banner_exito(self):

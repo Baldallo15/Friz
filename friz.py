@@ -1,4 +1,6 @@
 # friz.py
+import os
+import platform
 import sys
 import time
 from rich.console import Console
@@ -19,7 +21,8 @@ from modules.facebook import FacebookDownloader
 from modules.twitter import TwitterDownloader
 from modules.pinterest import PinterestDownloader
 
-console = Console()
+# Configuración multiplataforma para terminal
+console = Console(force_terminal=True)
 
 __version__ = __version__
 
@@ -47,7 +50,10 @@ def animacion_de_inicio():
     """
     Despliega una animación de carga estilo Matrix/Cyberpunk al iniciar la interfaz.
     """
-    console.clear()
+    try:
+        console.clear()
+    except Exception:
+        pass
     
     # 1. Animación de arranque del sistema
     pasos_booteo = [
@@ -62,7 +68,10 @@ def animacion_de_inicio():
         time.sleep(0.18)
     
     time.sleep(0.2)
-    console.clear()
+    try:
+        console.clear()
+    except Exception:
+        pass
 
     # 2. Animación Cyberpunk para renderizar el Banner FRIZ línea por línea
     lineas_banner = BANNER_RAW.split("\n")
@@ -96,48 +105,63 @@ def mostrar_menu():
 
 def main():
     # Ejecuta la animación de arranque al iniciar la herramienta
-    animacion_de_inicio()
+    try:
+        animacion_de_inicio()
+    except Exception:
+        pass
 
     while True:
-        mostrar_menu()
-        opcion = Prompt.ask(
-            "[bold bright_magenta]FRIZ-NET[/] Selecciona un módulo", 
-            choices=["1","2","3","4","5","6","7","8"]
-        )
-
-        if opcion == "8":
-            console.print("\n[bold bright_magenta]⚡ [FRIZ-NET] Desconectando de la red... ¡Hasta la próxima![/]")
-            sys.exit(0)
-
-        nombre_plataforma, handler_class, icono = MODULE_MAP[opcion]
-
-        console.print(f"\n[bold bright_cyan]>>> MÓDULO SELECCIONADO:[/] {icono} [bold white]{nombre_plataforma}[/]")
-        url = Prompt.ask(f"[bold bright_yellow]🔗 Ingresa la URL objetivo[/]").strip()
-
-        # Validación de la URL antes de intentar cualquier descarga
-        url_valida, mensaje_error = validar_url_para_plataforma(url, nombre_plataforma)
-        if not url_valida:
-            console.print(f"[bold red]❌ URL INVÁLIDA:[/] {mensaje_error}")
-            Prompt.ask("\n[bold cyan]Presiona ENTER para refrescar la interfaz...[/]")
-            console.clear()
-            continue
-
-        # Instancia el módulo modularizado de forma aislada
-        handler = handler_class()
-
         try:
-            # download_seguro() vuelve a validar la URL dentro del propio
-            # descargador (defensa en profundidad), no solo en esta capa de UI.
-            exito = handler.download_seguro(url)
-            if not exito:
-                console.print(f"\n[bold red]⚠️ El módulo {nombre_plataforma} reportó una interrupción.[/]")
-        except KeyboardInterrupt:
-            console.print(f"\n[bold yellow]⏸ Descarga cancelada por el usuario.[/]")
-        except Exception as e:
-            console.print(f"\n[bold red]💥 Error no controlado en {nombre_plataforma}: {e}[/]")
+            mostrar_menu()
+            opcion = Prompt.ask(
+                "[bold bright_magenta]FRIZ-NET[/] Selecciona un módulo", 
+                choices=["1","2","3","4","5","6","7","8"]
+            )
 
-        Prompt.ask("\n[bold cyan]Presiona ENTER para refrescar la interfaz...[/]")
-        console.clear()
+            if opcion == "8":
+                console.print("\n[bold bright_magenta]⚡ [FRIZ-NET] Desconectando de la red... ¡Hasta la próxima![/]")
+                sys.exit(0)
+
+            nombre_plataforma, handler_class, icono = MODULE_MAP[opcion]
+
+            console.print(f"\n[bold bright_cyan]>>> MÓDULO SELECCIONADO:[/] {icono} [bold white]{nombre_plataforma}[/]")
+            url = Prompt.ask(f"[bold bright_yellow]🔗 Ingresa la URL objetivo[/]").strip()
+
+            # Validación de la URL antes de intentar cualquier descarga
+            url_valida, mensaje_error = validar_url_para_plataforma(url, nombre_plataforma)
+            if not url_valida:
+                console.print(f"[bold red]❌ URL INVÁLIDA:[/] {mensaje_error}")
+                Prompt.ask("\n[bold cyan]Presiona ENTER para refrescar la interfaz...[/]")
+                try:
+                    console.clear()
+                except Exception:
+                    pass
+                continue
+
+            # Instancia el módulo modularizado de forma aislada
+            handler = handler_class()
+
+            try:
+                # download_seguro() vuelve a validar la URL dentro del propio
+                # descargador (defensa en profundidad), no solo en esta capa de UI.
+                exito = handler.download_seguro(url)
+                if not exito:
+                    console.print(f"\n[bold red]⚠️ El módulo {nombre_plataforma} reportó una interrupción.[/]")
+            except KeyboardInterrupt:
+                console.print(f"\n[bold yellow]⏸ Descarga cancelada por el usuario.[/]")
+            except Exception as e:
+                console.print(f"\n[bold red]💥 Error no controlado en {nombre_plataforma}: {e}[/]")
+
+            Prompt.ask("\n[bold cyan]Presiona ENTER para refrescar la interfaz...[/]")
+            try:
+                console.clear()
+            except Exception:
+                pass
+        except EOFError:
+            break
+        except KeyboardInterrupt:
+            console.print("\n[bold bright_magenta]⚡ [FRIZ-NET] Desconectando de la red... ¡Hasta la próxima![/]")
+            break
 
 if __name__ == "__main__":
     main()

@@ -111,8 +111,25 @@ bash install.sh
 
 Una vez ejecutado el script, simplemente sigue las instrucciones interactivas en pantalla. Selecciona el módulo de plataforma e ingresa la URL objetivo.
 
+**Windows:**
 ```bash
+run_friz.bat
+# o
 python friz.py
+```
+
+**Linux / macOS:**
+```bash
+./run_friz.sh
+# o
+python3 friz.py
+```
+
+**Termux (Android):**
+```bash
+friz
+# o
+python3 friz.py
 ```
 
 ### Plataformas Disponibles
