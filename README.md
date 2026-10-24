@@ -79,29 +79,35 @@
 
 Asegúrate de tener **Git** y **Python 3** instalados en tu sistema antes de comenzar.
 
-### Windows
+### Windows (7/8/10/11)
 ```bash
-git clone https://github.com/Baldallo15/Friz_Descargas.git
-cd Friz_Descargas
-pip install -r requirements.txt
-python friz.py
+git clone https://github.com/Baldallo15/Friz.git
+cd Friz
+install.bat
+# o ejecutar directamente
+run_friz.bat
 ```
 
 ### Linux
 ```bash
-git clone https://github.com/Baldallo15/Friz_Descargas.git
-cd Friz_Descargas
+git clone https://github.com/Baldallo15/Friz.git
+cd Friz
+chmod +x install_universal.sh run_friz.sh
+./install_universal.sh
+# o instalar manualmente
 pip3 install -r requirements.txt
-python3 friz.py
+./run_friz.sh
 ```
 
 ### Termux (Android)
 ```bash
 pkg update && pkg upgrade
-pkg install git python
-git clone https://github.com/Baldallo15/Friz_Descargas.git
-cd Friz_Descargas
-chmod +x *
+pkg install git python ffmpeg
+git clone https://github.com/Baldallo15/Friz.git
+cd Friz
+chmod +x install_universal.sh
+./install_universal.sh
+# o usar el instalador original
 bash install.sh
 ```
 
