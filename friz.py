@@ -166,10 +166,6 @@ def main():
             console.print("\n[bold bright_magenta]⚡ [FRIZ-NET] Desconectando de la red... ¡Hasta la próxima![/]")
             break
 
-if __name__ == "__main__":
-    main()
-
-
 # Verificación de dependencias al inicio
 def verificar_y_corregir_dependencias():
     """Verifica y corrige dependencias al momento de ejecutar"""
@@ -182,3 +178,7 @@ def verificar_y_corregir_dependencias():
         console.print(f"[yellow]⚠ No se pudo verificar dependencias: {e}[/]")
         console.print("[dim]Continuando con la ejecución...[/]")
         time.sleep(1)
+
+
+if __name__ == "__main__":
+    main()

@@ -412,3 +412,7 @@ class BaseDownloader:
     def download_seguro(self, url: str):
         """Método base para descarga segura"""
         raise NotImplementedError
+
+
+# Alias para compatibilidad con módulos existentes
+YtDlpDownloader = BaseDownloader
