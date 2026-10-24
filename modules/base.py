@@ -414,10 +414,6 @@ class BaseDownloader:
         raise NotImplementedError
 
 
-# Alias para compatibilidad con módulos existentes
-YtDlpDownloader = BaseDownloader
-
-
     def tiene_ffmpeg_real(self):
         """Verifica si hay un ffmpeg real (no ffmpegthumbnailer)"""
         import shutil
@@ -441,3 +437,9 @@ YtDlpDownloader = BaseDownloader
             except:
                 continue
         return False, None
+
+
+# Alias para compatibilidad con módulos existentes
+YtDlpDownloader = BaseDownloader
+
+
