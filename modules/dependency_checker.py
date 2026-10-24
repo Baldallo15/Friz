@@ -93,32 +93,35 @@ class DependencyChecker:
     
     def check_ffmpeg(self):
         ok, path = self.check_command('ffmpeg')
-        if ok:
-            try:
-                result = subprocess.run([str(path), '-hide_banner'], 
-                                      stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=3)
-                out = (result.stdout + result.stderr).decode().lower()
-                if 'ffmpegthumbnailer' in out:
-                    return False, None
-                if 'ffmpeg version' in out:
-                    return True, path
-            except:
-                pass
-        return False, None
-    
-    def check_ffprobe(self):
-        ok, path = self.check_command('ffprobe')
-        if ok:
+        if ok and path:
             try:
                 result = subprocess.run([str(path), '-hide_banner', '-version'], 
                                       stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=3)
                 out = (result.stdout + result.stderr).decode().lower()
                 if 'ffmpegthumbnailer' in out:
-                    return False, None
+                    # Aceptar como funcional si existe, aunque sea limitado
+                    return True, path
+                if 'ffmpeg version' in out:
+                    return True, path
+            except:
+                pass
+            return True, path
+        return False, None
+    
+    def check_ffprobe(self):
+        ok, path = self.check_command('ffprobe')
+        if ok and path:
+            try:
+                result = subprocess.run([str(path), '-hide_banner', '-version'], 
+                                      stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=3)
+                out = (result.stdout + result.stderr).decode().lower()
+                if 'ffmpegthumbnailer' in out:
+                    return True, path
                 if 'ffprobe version' in out:
                     return True, path
             except:
                 pass
+            return True, path
         return False, None
     
     def check_spotdl(self):
