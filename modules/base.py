@@ -249,10 +249,16 @@ class BaseDownloader(ABC):
         try:
             if self.PLATAFORMA == "YouTube":
                 cmd = ["yt-dlp", "--flat-playlist", "-J", url]
-                process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=60)
-                stdout, stderr = process.communicate(timeout=60)
+                process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                try:
+                    stdout, stderr = process.communicate(timeout=90)
+                except subprocess.TimeoutExpired:
+                    process.kill()
+                    process.communicate()
+                    console.print("[bold yellow]⚠️ Escaneo tardó demasiado. Se procederá con descarga directa.[/]")
+                    return []
                 if process.returncode != 0:
-                    logger.warning("Error al escanear playlist YouTube: %s", stderr[:200])
+                    logger.warning("Error al escanear playlist YouTube: %s", stderr[:200] if stderr else "")
                     return []
                 data = json.loads(stdout)
                 entries = data.get("entries", []) if isinstance(data, dict) else []
@@ -262,38 +268,56 @@ class BaseDownloader(ABC):
                         continue
                     titulo = e.get("title") or e.get("id") or "Sin título"
                     video_id = e.get("id") or ""
-                    resultado.append({"titulo": titulo, "id": video_id, "url": f"https://www.youtube.com/watch?v={video_id}" if video_id else url})
+                    duration = e.get("duration") or 0  # segundos
+                    resultado.append({
+                        "titulo": titulo,
+                        "id": video_id,
+                        "url": f"https://www.youtube.com/watch?v={video_id}" if video_id else url,
+                        "duracion": duration
+                    })
                 return resultado
             elif self.PLATAFORMA == "Spotify":
-                # spotdl puede listar con --print-errors pero mejor usar metadata vía spotdl search? 
-                # Usamos spotdl --save-file o simplemente intentamos extraer info
-                cmd = ["spotdl", url, "--save-file", "/tmp/friz_spotify_list.json", "--dry-run"]
+                cmd = ["spotdl", url, "--save-file", "/tmp/friz_spotify_list.json", "--print-errors"]
                 try:
-                    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=90)
-                    stdout, stderr = process.communicate(timeout=90)
-                except Exception:
-                    # Fallback: intentar con spotdl info si está disponible
-                    pass
+                    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                    stdout, stderr = process.communicate(timeout=120)
+                except subprocess.TimeoutExpired:
+                    process.kill()
+                    process.communicate()
+                    console.print("[bold yellow]⚠️ Escaneo tardó demasiado. Se procederá con descarga directa.[/]")
+                    return []
                 # Intentar leer archivo generado
                 try:
                     if os.path.exists("/tmp/friz_spotify_list.json"):
                         with open("/tmp/friz_spotify_list.json", encoding="utf-8") as f:
                             data = json.load(f)
                         resultado = []
-                        # spotdl guarda lista de tracks
                         if isinstance(data, list):
                             for i, item in enumerate(data):
-                                titulo = f"{item.get('artists', [''])[0]} - {item.get('name', 'Sin título')}" if isinstance(item.get('artists'), list) else item.get('name', f'Track {i+1}')
-                                resultado.append({"titulo": titulo, "url": item.get('url') or url})
+                                if isinstance(item.get('artists'), list) and item['artists']:
+                                    artista = item['artists'][0]
+                                    titulo = f"{artista} - {item.get('name', 'Sin título')}"
+                                else:
+                                    titulo = item.get('name', f'Track {i+1}')
+                                duration = item.get('duration') or item.get('duration_ms', 0)
+                                if isinstance(duration, int) and duration > 100000:  # ms
+                                    duration = int(duration / 1000)
+                                resultado.append({"titulo": titulo, "url": item.get('url') or url, "duracion": duration or 0})
                         elif isinstance(data, dict) and data.get("tracks"):
                             for i, item in enumerate(data["tracks"]):
-                                titulo = f"{item.get('artists', [''])[0]} - {item.get('name', 'Sin título')}" if isinstance(item.get('artists'), list) else item.get('name', f'Track {i+1}')
-                                resultado.append({"titulo": titulo, "url": item.get('url') or url})
+                                if isinstance(item.get('artists'), list) and item['artists']:
+                                    artista = item['artists'][0]
+                                    titulo = f"{artista} - {item.get('name', 'Sin título')}"
+                                else:
+                                    titulo = item.get('name', f'Track {i+1}')
+                                duration = item.get('duration') or item.get('duration_ms', 0)
+                                if isinstance(duration, int) and duration > 100000:
+                                    duration = int(duration / 1000)
+                                resultado.append({"titulo": titulo, "url": item.get('url') or url, "duracion": duration or 0})
                         return resultado
-                except Exception:
-                    pass
-                # Si falla el escaneo, devolver lista con URL única para descarga normal
-                return [{"titulo": "Contenido completo (descarga secuencial)", "url": url}]
+                except Exception as e:
+                    logger.warning("Error leyendo archivo spotdl: %s", e)
+                return [{"titulo": "Contenido completo (descarga secuencial)", "url": url, "duracion": 0}]
         except subprocess.TimeoutExpired:
             console.print("[bold yellow]⚠️ Escaneo tardó demasiado. Se procederá con descarga directa.[/]")
             return []
@@ -302,17 +326,60 @@ class BaseDownloader(ABC):
             console.print(f"[bold yellow]⚠️ No se pudo escanear la playlist: {e}[/]")
             return []
 
-    def mostrar_lista_canciones(self, lista: list) -> list:
+    def calcular_tamano_aproximado(self, lista: list, calidad_audio_bitrate: str = None, tipo: str = "audio") -> str:
+        """Calcula tamaño aproximado en MB/GB basado en duración."""
+        if not lista:
+            return "N/A"
+        total_segundos = 0
+        for item in lista:
+            dur = item.get("duracion") or 0
+            if dur:
+                total_segundos += dur
+        if total_segundos == 0:
+            return "~Desconocido"
+
+        if tipo == "audio":
+            # Aproximaciones: 320kbps ~ 2.4MB/min, 256kbps ~ 1.92MB/min, 192kbps ~ 1.44MB/min, 128kbps ~ 0.96MB/min
+            bitrate = int(calidad_audio_bitrate) if calidad_audio_bitrate else 320
+            mb_por_minuto = (bitrate * 60) / 8 / 1024  # bitrate kbps -> MB/min
+            total_mb = (total_segundos / 60) * mb_por_minuto
+        else:  # video
+            # Aproximación conservadora
+            total_mb = (total_segundos / 60) * 15  # ~15MB/min promedio
+
+        if total_mb >= 1024:
+            return f"~{total_mb / 1024:.2f} GB"
+        elif total_mb >= 1:
+            return f"~{total_mb:.1f} MB"
+        else:
+            return f"~{total_mb * 1024:.0f} KB"
+
+    def mostrar_lista_canciones(self, lista: list, calidad_audio_bitrate: str = None, tipo: str = "audio") -> list:
         """Muestra tabla con canciones y permite seleccionar cuáles descargar."""
         if not lista:
             return []
+        # Calcular duración total
+        total_segundos = sum(item.get("duracion") or 0 for item in lista)
+        minutos = total_segundos // 60
+        segundos = total_segundos % 60
+        tamano_aprox = self.calcular_tamano_aproximado(lista, calidad_audio_bitrate, tipo)
+
         table = Table(title=f"[bold magenta]🎵 CONTENIDO ENCONTRADO ({len(lista)} elementos)[/]", border_style="cyan")
         table.add_column("#", style="cyan", justify="right", width=4)
         table.add_column("Título", style="white")
+        table.add_column("Duración", style="yellow", justify="center", width=10)
         for i, item in enumerate(lista, 1):
-            table.add_row(str(i), item.get("titulo", "Sin título")[:80])
+            dur = item.get("duracion") or 0
+            if dur:
+                m = dur // 60
+                s = dur % 60
+                dur_str = f"{m}:{s:02d}"
+            else:
+                dur_str = "N/A"
+            table.add_row(str(i), item.get("titulo", "Sin título")[:70], dur_str)
         console.print(table)
-        console.print("\n[bold cyan]Opciones:[/] [green]all[/] = todas | [yellow]1,2,5[/] = selección específica | [red]q[/] = cancelar")
+        console.print(f"\n[bold bright_cyan]📊 RESUMEN:[/] {len(lista)} pistas | Duración total: [yellow]{minutos}:{segundos:02d}[/] | Tamaño aprox.: [bold green]{tamano_aprox}[/]")
+        console.print("\n[bold cyan]Opciones:[/] [green]all[/] = todas | [yellow]1,2,5[/] = selección específica | [yellow]1-10[/] = rango | [red]q[/] = cancelar")
         seleccion = Prompt.ask("[bold bright_magenta]FRIZ-NET[/] ¿Qué deseas descargar?", default="all")
         if seleccion.lower() in ('q', 'cancelar', 'salir'):
             return []

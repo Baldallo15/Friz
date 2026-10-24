@@ -20,7 +20,9 @@ class SpotifyDownloader(BaseDownloader):
             console.print(f"\n[bold bright_cyan]⚡ PLAYLIST/ÁLBUM DETECTADO - SPOTIFY[/]")
             lista = self.escanear_playlist(url)
             if lista and len(lista) > 0 and not (len(lista) == 1 and lista[0].get("titulo", "").startswith("Contenido completo")):
-                seleccionados = self.mostrar_lista_canciones(lista)
+                console.print(f"[bold green]✓ Verificación completada: [bold white]{len(lista)}[/] pista(s) encontrada(s)[/]")
+                audio_bitrate = self.seleccionar_calidad_audio()
+                seleccionados = self.mostrar_lista_canciones(lista, audio_bitrate, "audio")
                 if not seleccionados:
                     console.print("[bold yellow]⚠️ No se seleccionaron elementos. Operación cancelada.[/]")
                     return False
@@ -28,13 +30,12 @@ class SpotifyDownloader(BaseDownloader):
             else:
                 console.print("[bold yellow]⚠️ Escaneando/descargando contenido completo del álbum/playlist.[/]")
                 seleccionados = None
+                audio_bitrate = self.seleccionar_calidad_audio()
 
-            audio_bitrate = self.seleccionar_calidad_audio()
             console.print(f"\n[bold bright_cyan]⚡ INICIANDO DESCARGA DE SPOTIFY ({audio_bitrate}kbps)...[/]")
             output_template = os.path.join(self.output_dir, "{artist} - {title}.{ext}")
 
             if seleccionados:
-                # Descargar uno a uno
                 exito_total = True
                 for item in seleccionados:
                     url_item = item.get("url") or url

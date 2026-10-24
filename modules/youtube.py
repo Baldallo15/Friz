@@ -14,23 +14,30 @@ class YoutubeDownloader(YtDlpDownloader):
         if self._es_playlist_o_album(url_limpia):
             console.print(f"\n[bold bright_cyan]⚡ PLAYLIST/ÁLBUM DETECTADO - {self.PLATAFORMA.upper()}[/]")
             lista = self.escanear_playlist(url_limpia)
-            if lista:
-                seleccionados = self.mostrar_lista_canciones(lista)
+            if not lista:
+                console.print("[bold yellow]⚠️ No se pudo obtener listado. Se descargará el contenido completo.[/]")
+                seleccionados = [{"url": url_limpia, "titulo": "Contenido completo", "duracion": 0}]
+            else:
+                # Verificar conteo
+                console.print(f"[bold green]✓ Verificación completada: [bold white]{len(lista)}[/] pista(s) encontrada(s)[/]")
+                # Preguntar tipo primero para calcular tamaño
+                tipo = Prompt.ask("[bold bright_magenta]FRIZ-NET[/] ¿Descargar [A]udio (MP3) o [V]ideo?", choices=["A", "V", "a", "v"], default="A")
+                if tipo.lower() == 'a':
+                    audio_bitrate = self.seleccionar_calidad_audio()
+                    seleccionados = self.mostrar_lista_canciones(lista, audio_bitrate, "audio")
+                else:
+                    seleccionados = self.mostrar_lista_canciones(lista, None, "video")
                 if not seleccionados:
                     console.print("[bold yellow]⚠️ No se seleccionaron elementos. Operación cancelada.[/]")
                     return False
                 console.print(f"\n[bold green]✓ Se descargarán {len(seleccionados)} elemento(s)[/]")
-            else:
-                console.print("[bold yellow]⚠️ No se pudo obtener listado. Se descargará el contenido completo.[/]")
-                seleccionados = [{"url": url_limpia, "titulo": "Contenido completo"}]
 
-            # Preguntar si descargar solo audio o video
-            tipo = Prompt.ask("[bold bright_magenta]FRIZ-NET[/] ¿Descargar [A]udio (MP3) o [V]ideo?", choices=["A", "V", "a", "v"], default="A")
+            if 'tipo' not in locals():
+                tipo = Prompt.ask("[bold bright_magenta]FRIZ-NET[/] ¿Descargar [A]udio (MP3) o [V]ideo?", choices=["A", "V", "a", "v"], default="A")
             if tipo.lower() == 'a':
-                formato_calidad = "bestaudio/best"
-                audio_bitrate = self.seleccionar_calidad_audio()
+                if 'audio_bitrate' not in locals():
+                    audio_bitrate = self.seleccionar_calidad_audio()
                 console.print(f"\n[bold bright_cyan]⚡ INICIANDO DESCARGA DE AUDIO ({audio_bitrate}kbps)...[/]")
-                # Para playlists, procesar cada URL
                 exito_total = True
                 for item in seleccionados:
                     url_item = item.get("url") or url_limpia
