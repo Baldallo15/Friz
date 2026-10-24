@@ -1,254 +1,143 @@
-# modules/base.py
-"""
-Módulo base de FRIZ.
-
-Contiene:
- - `BaseDownloader`: clase abstracta con la lógica común a todas las
-   plataformas (gestión de carpeta de salida, ejecución de procesos
-   externos con UI animada, y validación defensiva de URL).
- - `YtDlpDownloader`: plantilla reutilizable para toda plataforma que
-   descarga a través de `yt-dlp`, evitando duplicar el mismo bloque de
-   código en cada módulo de plataforma (YouTube, Instagram, Facebook,
-   Twitter/X, Pinterest).
-"""
-import json
-import logging
 import os
-import platform
-import re
-import subprocess
 import sys
-import tempfile
-from abc import ABC, abstractmethod
+import json
+import subprocess
+import time
+import logging
 from pathlib import Path
 from urllib.parse import urlparse
-
 from rich.console import Console
 from rich.panel import Panel
-from rich.prompt import Prompt, Confirm
-from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TimeRemainingColumn
-from rich.align import Align
 from rich.table import Table
-
-from modules.validator import validar_url_para_plataforma
+from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TimeElapsedColumn
+from rich.prompt import Prompt, Confirm
 
 console = Console(force_terminal=True)
 
-# --- Logging estructurado -------------------------------------------------
-# Además de la UI vistosa de `rich`, se registra cada ejecución en un
-# archivo de log rotativo, útil para depurar fallos reportados por
-# usuarios sin depender únicamente de lo que se vio en pantalla.
-LOG_DIR = Path.home() / ".friz" / "logs"
-try:
-    LOG_DIR.mkdir(parents=True, exist_ok=True)
-except Exception:
-    LOG_DIR = Path(tempfile.gettempdir()) / "friz" / "logs"
-    LOG_DIR.mkdir(parents=True, exist_ok=True)
+# Configuración de logging
+log_dir = Path.home() / ".friz" / "logs"
+log_dir.mkdir(parents=True, exist_ok=True)
+logging.basicConfig(
+    filename=log_dir / "friz.log",
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+logger = logging.getLogger(__name__)
 
-logger = logging.getLogger("friz")
-logger.setLevel(logging.INFO)
-if not logger.handlers:
-    try:
-        _handler = logging.FileHandler(LOG_DIR / "friz.log", encoding="utf-8")
-        _handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s"))
-        logger.addHandler(_handler)
-    except Exception:
-        pass
-
-# Mapa ASCII compacto de Venezuela
-MAPA_VENEZUELA_ASCII = """[bold yellow]
-      ▄▄▄▄▄▄▄▄▄▄
-    ▄████████████▄
-   ████████████████
-[/][bold blue]   ▀██████████████▀
-     ▀██████████▀
-[/][bold red]       ▀██████▀
-         ▀██▀
-[/]"""
-
-
-class BaseDownloader(ABC):
-    """Clase base abstracta para todos los descargadores de plataforma.
-
-    Cada subclase debe declarar el atributo de clase `PLATAFORMA` (usado
-    para la validación de URL en `modules/validator.py`) e implementar
-    `download(url)`.
-    """
-
-    #: Nombre de la plataforma tal como aparece en
-    #: `modules.validator.DOMINIOS_PERMITIDOS`. Las subclases lo sobreescriben.
-    PLATAFORMA: str = ""
-
-    def __init__(self):
-        self.output_dir = self._obtener_y_preparar_ruta()
-
-    def _obtener_y_preparar_ruta(self) -> str:
-        """Determina y crea (si hace falta) la carpeta de descargas de Friz."""
-        home = os.path.expanduser("~")
-        sistema = platform.system()
-
-        if "TERMUX_VERSION" in os.environ or os.environ.get("PREFIX", "").startswith("/data/data/com.termux"):
-            # Termux Android
-            if os.path.exists("/sdcard/Download"):
-                base_download = "/sdcard/Download"
-            elif os.path.exists("/storage/emulated/0/Download"):
-                base_download = "/storage/emulated/0/Download"
+class BaseDownloader:
+    def __init__(self, plataforma=""):
+        self.PLATAFORMA = plataforma
+        self.sistema = sys.platform
+        self.home = Path.home()
+        self._configurar_directorios()
+    
+    def _configurar_directorios(self):
+        """Configura directorios de descargas multiplataforma"""
+        if self.sistema == "win32":
+            self.output_dir = self.home / "Downloads" / "Friz"
+        elif 'ANDROID_ROOT' in os.environ or os.path.exists('/data/data/com.termux'):
+            # Termux
+            termux_downloads = Path("/sdcard/Download")
+            if termux_downloads.exists():
+                self.output_dir = termux_downloads / "Friz"
             else:
-                base_download = os.path.join(home, "Downloads")
-        elif sistema == "Windows":
-            # Windows (7/8/10/11)
-            base_download = os.path.join(home, "Downloads")
-        elif sistema == "Darwin":
-            base_download = os.path.join(home, "Downloads")
+                self.output_dir = self.home / "storage" / "downloads" / "Friz"
         else:
-            # Linux y otros
-            base_download = os.path.join(home, "Downloads")
-
-        friz_dir = os.path.join(base_download, "Friz")
-
-        if not os.path.exists(friz_dir):
-            try:
-                os.makedirs(friz_dir, exist_ok=True)
-                console.print(f"[bold cyan]⚡ SYSTEM:[/] Directorio cibernético montado en: [bold magenta]{friz_dir}[/]")
-                logger.info("Directorio de descargas creado en %s", friz_dir)
-            except OSError as e:
-                console.print(f"[bold red]❌ ERROR SYSTEM:[/] No se pudo crear el directorio {friz_dir}: {e}")
-                logger.error("No se pudo crear el directorio %s: %s", friz_dir, e)
-                # Intentar fallback en directorio actual
-                fallback = os.path.join(os.getcwd(), "Friz_Downloads")
+            self.output_dir = self.home / "Downloads" / "Friz"
+        
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+        logger.info(f"Directorio de descargas creado en {self.output_dir}")
+    
+    def obtener_ytdlp_bin(self):
+        """Obtiene el binario yt-dlp más actualizado disponible"""
+        # Priorizar /tmp/yt-dlp
+        if os.path.exists('/tmp/yt-dlp') and os.access('/tmp/yt-dlp', os.X_OK):
+            return '/tmp/yt-dlp'
+        # Buscar en ~/.local/bin
+        local_ytdlp = self.home / '.local' / 'bin' / 'yt-dlp'
+        if local_ytdlp.exists() and os.access(local_ytdlp, os.X_OK):
+            return str(local_ytdlp)
+        # Buscar en PATH
+        import shutil
+        ytdlp = shutil.which('yt-dlp')
+        if ytdlp:
+            return ytdlp
+        return 'yt-dlp'
+    
+    def obtener_ffmpeg_args(self):
+        """Obtiene argumentos de ffmpeg para yt-dlp"""
+        local_bin = self.home / '.local' / 'bin'
+        args = []
+        if local_bin.exists():
+            ffmpeg = local_bin / 'ffmpeg'
+            ffprobe = local_bin / 'ffprobe'
+            if ffmpeg.exists() and ffprobe.exists():
+                # Verificar que sea ffmpeg real
                 try:
-                    os.makedirs(fallback, exist_ok=True)
-                    console.print(f"[bold yellow]⚠️ Usando directorio alternativo:[/] {fallback}")
-                    return fallback
-                except Exception:
-                    return "."
-        return friz_dir
-
-    def mostrar_banner_exito(self):
-        """Despliega el mini banner con el mapa de Venezuela y el estado de descarga."""
-        contenido = (
-            f"{MAPA_VENEZUELA_ASCII}\n"
-            f"[bold bright_green]✔ DESCARGA COMPLETADA CON ÉXITO[/]\n"
-            f"[bold bright_cyan]💾 Guardado en:[/] [bold bright_yellow]{self.output_dir}[/]"
-        )
-
-        console.print(Panel(
-            Align.center(contenido),
-            title="[bold yellow]★[/] [bold blue]FRIZ[/] [bold red]VENEZUELA[/] [bold yellow]★[/]",
-            border_style="bright_yellow"
-        ))
-
-    def seleccionar_calidad(self) -> str:
-        """Muestra el menú de resolución/calidad y devuelve el selector de formato de yt-dlp."""
-        texto_menu = (
-            "[bold cyan]1.[/] 🚀 [bold magenta]MÁXIMA CALIDAD[/] (Best Available)\n"
-            "[bold cyan]2.[/] 📺 [bold bright_blue]ULTRA HD[/] (1080p)\n"
-            "[bold cyan]3.[/] 💻 [bold green]ESTANDAR HD[/] (720p)\n"
-            "[bold cyan]4.[/] 📱 [bold yellow]AHORRO DATOS[/] PARA POBRES :( (480p / 360p)\n"
-            "[bold cyan]5.[/] 🎵 [bold red]SOLO AUDIO[/] (MP3 / High Quality)"
-        )
-
-        console.print(Panel(
-            texto_menu,
-            title="[bold magenta]⚡ CONFIGURACIÓN DE RESOLUCIÓN ⚡[/]",
-            border_style="bright_cyan"
-        ))
-
-        opcion = Prompt.ask("[bold bright_magenta]FRIZ-NET[/] Selecciona calidad", choices=["1", "2", "3", "4", "5"], default="1")
-
-        if opcion == "2":
-            return "bestvideo[height<=1080]+bestaudio/best[height<=1080]/best"
-        elif opcion == "3":
-            return "bestvideo[height<=720]+bestaudio/best[height<=720]/best"
-        elif opcion == "4":
-            return "bestvideo[height<=480]+bestaudio/best[height<=480]/best"
-        elif opcion == "5":
-            return "bestaudio/best"
-        else:
-            return "bestvideo+bestaudio/best"
-
-    def seleccionar_calidad_audio(self) -> str:
-        """Menú específico para descargas de audio (Spotify/YouTube Audio)."""
-        texto_menu = (
-            "[bold cyan]1.[/] 🔥 [bold magenta]ALTA CALIDAD[/] (320kbps)\n"
-            "[bold cyan]2.[/] 🎧 [bold bright_cyan]BUENA CALIDAD[/] (256kbps)\n"
-            "[bold cyan]3.[/] 💿 [bold green]ESTÁNDAR[/] (192kbps)\n"
-            "[bold cyan]4.[/] 📱 [bold yellow]ECONÓMICA[/] (128kbps)"
-        )
-
-        console.print(Panel(
-            texto_menu,
-            title="[bold magenta]⚡ CONFIGURACIÓN DE CALIDAD DE AUDIO ⚡[/]",
-            border_style="bright_cyan"
-        ))
-
-        opcion = Prompt.ask("[bold bright_magenta]FRIZ-NET[/] Selecciona calidad de audio", choices=["1", "2", "3", "4"], default="1")
-        if opcion == "2":
-            return "256"
-        elif opcion == "3":
-            return "192"
-        elif opcion == "4":
-            return "128"
-        else:
-            return "320"
-
-    def ejecutar_comando_animado(self, cmd: list, mensaje_modulo: str, timeout: int = 1800) -> bool:
-        """Ejecuta un comando externo (yt-dlp/spotdl) mostrando progreso animado.
-
-        Usa `subprocess.Popen` con `cmd` como lista de argumentos (sin
-        `shell=True`), lo que evita inyección de comandos vía shell.
-        """
-        logger.info("Ejecutando comando para %s: %s", mensaje_modulo, " ".join(cmd))
+                    result = subprocess.run([str(ffmpeg), '-hide_banner'], 
+                                          stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=2)
+                    out = (result.stdout + result.stderr).decode()
+                    if 'ffmpeg version' in out.lower():
+                        args.extend(['--ffmpeg-location', str(local_bin)])
+                except:
+                    pass
+        return args
+    
+    def ejecutar_comando_animado(self, cmd, descripcion="Descarga"):
+        """Ejecuta comando con animación"""
         try:
-            with Progress(
-                SpinnerColumn("dots12", style="bold magenta"),
-                TextColumn("[bold cyan]{task.description}[/]"),
-                BarColumn(bar_width=None, style="magenta", complete_style="bright_cyan", finished_style="bright_green"),
-                TextColumn("[bold bright_yellow]{task.percentage:>3.0f}%[/]"),
-                TimeRemainingColumn(),
-                console=console
-            ) as progress:
-
-                task = progress.add_task(f"[bold bright_cyan]Procesando {mensaje_modulo}...[/]", total=None)
-                process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
-
-                try:
-                    for line in process.stdout:
-                        if "%" in line or "ETA" in line or "download" in line.lower():
-                            progress.update(task, description=f"[bold magenta]⚡ Descargando flujo de {mensaje_modulo}...[/]")
-                    process.wait(timeout=timeout)
-                except subprocess.TimeoutExpired:
-                    process.kill()
-                    process.wait()
-                    console.print(f"\n[bold red]❌ [TIMEOUT] La descarga superó el tiempo límite de {timeout // 60} minutos.[/]")
-                    logger.error("Timeout tras %s segundos ejecutando %s", timeout, " ".join(cmd))
-                    return False
-
-                if process.returncode == 0:
-                    progress.update(task, completed=100)
-                    console.print()
-                    self.mostrar_banner_exito()
-                    logger.info("Descarga de %s completada con éxito.", mensaje_modulo)
-                    return True
-                else:
-                    console.print(f"\n[bold red]❌ [FALLO DE NODO] Error en la descarga.[/]")
-                    console.print("[bold yellow]💡 Revisa los logs en ~/.friz/logs/friz.log para más detalles.[/]")
-                    logger.warning("El comando de %s terminó con código %s", mensaje_modulo, process.returncode)
-                    return False
-
-        except FileNotFoundError:
-            # El binario externo (yt-dlp / spotdl) no está instalado o no está en el PATH.
-            console.print(
-                f"[bold red]❌ [DEPENDENCIA FALTANTE]:[/] No se encontró el ejecutable "
-                f"[bold]{cmd[0]}[/]. ¿Está instalado y disponible en el PATH?"
+            logger.info(f"Ejecutando comando para {descripcion}: {' '.join(str(c) for c in cmd)}")
+            
+            # Añadir PATH con .local/bin
+            env = os.environ.copy()
+            local_bin = str(self.home / '.local' / 'bin')
+            env['PATH'] = f"{local_bin}:{env.get('PATH', '')}"
+            
+            process = subprocess.Popen(
+                cmd, 
+                stdout=subprocess.PIPE, 
+                stderr=subprocess.STDOUT,
+                text=True,
+                bufsize=1,
+                env=env
             )
-            logger.error("Ejecutable no encontrado: %s", cmd[0])
+            
+            with Progress(
+                SpinnerColumn(),
+                TextColumn("[progress.description]{task.description}"),
+                transient=False,
+            ) as progress:
+                task = progress.add_task(f"[cyan]{descripcion}...", total=None)
+                for line in process.stdout:
+                    line_stripped = line.strip()
+                    if line_stripped:
+                        # Mostrar líneas importantes
+                        if any(x in line_stripped.lower() for x in ['error', 'warning', 'download', 'extract', 'merge']):
+                            if len(line_stripped) < 100:
+                                progress.update(task, description=f"[cyan]{descripcion}: {line_stripped[:60]}...")
+                process.wait()
+            
+            if process.returncode == 0:
+                console.print(f"[bold green]✓ {descripcion} completada con éxito.[/]")
+                logger.info(f"Descarga de {descripcion} completada con éxito.")
+                return True
+            else:
+                console.print(f"[bold red]✗ {descripcion} terminó con código {process.returncode}[/]")
+                logger.warning(f"El comando de {descripcion} terminó con código {process.returncode}")
+                return False
+        except KeyboardInterrupt:
+            try:
+                process.kill()
+            except:
+                pass
+            console.print(f"\n[bold yellow]⏸ {descripcion} cancelada por el usuario.[/]")
+            raise
+        except Exception as e:
+            console.print(f"[bold red]Error ejecutando comando: {e}[/]")
+            logger.error(f"Error ejecutando {descripcion}: {e}")
             return False
-        except subprocess.SubprocessError as e:
-            console.print(f"[bold red]❌ [ERROR DE PROCESO]:[/] {e}")
-            logger.error("Error de subprocess ejecutando %s: %s", mensaje_modulo, e)
-            return False
-
+    
     def _es_playlist_o_album(self, url: str) -> bool:
         """Detecta si la URL apunta a una playlist o álbum."""
         url_lower = url.lower()
@@ -267,221 +156,259 @@ class BaseDownloader(ABC):
                 return True
             return False
         return False
-
+    
     def escanear_playlist(self, url: str) -> list:
         """Escanea playlist/álbum y devuelve lista de entradas."""
         console.print(f"\n[bold bright_cyan]🔍 Escaneando contenido de {self.PLATAFORMA}...[/]")
         try:
             if self.PLATAFORMA == "YouTube":
-                cmd = ["yt-dlp", "--flat-playlist", "-J", url]
-                process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-                try:
-                    stdout, stderr = process.communicate(timeout=90)
-                except subprocess.TimeoutExpired:
-                    process.kill()
-                    process.communicate()
-                    console.print("[bold yellow]⚠️ Escaneo tardó demasiado. Se procederá con descarga directa.[/]")
-                    return []
-                if process.returncode != 0:
-                    logger.warning("Error al escanear playlist YouTube: %s", stderr[:200] if stderr else "")
-                    return []
-                data = json.loads(stdout)
-                entries = data.get("entries", []) if isinstance(data, dict) else []
-                resultado = []
-                for e in entries:
-                    if not e:
+                yt_dlp_bin = self.obtener_ytdlp_bin()
+                for cmd in [
+                    [yt_dlp_bin, "--flat-playlist", "-J", "--no-warnings", url],
+                    [yt_dlp_bin, "--dump-single-json", "--playlist-end", "1000", "--no-warnings", url],
+                    [yt_dlp_bin, "-j", "--flat-playlist", "--no-warnings", url],
+                ]:
+                    try:
+                        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                        try:
+                            stdout, stderr = process.communicate(timeout=150)
+                        except subprocess.TimeoutExpired:
+                            process.kill()
+                            process.communicate()
+                            continue
+                        if process.returncode != 0 or not stdout.strip():
+                            continue
+                        try:
+                            data = json.loads(stdout)
+                        except Exception:
+                            lines = [l for l in stdout.strip().splitlines() if l.strip().startswith('{')]
+                            if not lines:
+                                continue
+                            try:
+                                data = json.loads(lines[0])
+                            except Exception:
+                                continue
+                        entries = []
+                        if isinstance(data, dict):
+                            entries = data.get("entries") or []
+                        elif isinstance(data, list):
+                            entries = data
+                        if not entries:
+                            continue
+                        resultado = []
+                        for e in entries:
+                            if not e or not isinstance(e, dict):
+                                continue
+                            titulo = e.get("title") or e.get("id") or "Sin título"
+                            video_id = e.get("id") or ""
+                            url_item = e.get("url") or e.get("webpage_url") or ""
+                            if video_id and not str(video_id).startswith('http'):
+                                if 'music.youtube.com' in url:
+                                    url_item = f"https://music.youtube.com/watch?v={video_id}"
+                                else:
+                                    url_item = f"https://www.youtube.com/watch?v={video_id}"
+                            elif not url_item and video_id:
+                                if 'music.youtube.com' in url:
+                                    url_item = f"https://music.youtube.com/watch?v={video_id}"
+                                else:
+                                    url_item = f"https://www.youtube.com/watch?v={video_id}"
+                            if not url_item:
+                                continue
+                            duration = e.get("duration") or 0
+                            resultado.append({"titulo": titulo, "id": video_id or url_item, "url": url_item, "duracion": duration})
+                        if resultado:
+                            console.print(f"[bold green]✓ Verificación completada: [bold white]{len(resultado)}[/] pista(s) encontrada(s)[/]")
+                            return resultado
+                    except subprocess.TimeoutExpired:
                         continue
-                    titulo = e.get("title") or e.get("id") or "Sin título"
-                    video_id = e.get("id") or ""
-                    duration = e.get("duration") or 0  # segundos
-                    resultado.append({
-                        "titulo": titulo,
-                        "id": video_id,
-                        "url": f"https://www.youtube.com/watch?v={video_id}" if video_id else url,
-                        "duracion": duration
-                    })
-                return resultado
-            elif self.PLATAFORMA == "Spotify":
-                cmd = ["spotdl", url, "--save-file", "/tmp/friz_spotify_list.json", "--print-errors"]
+                    except Exception as e:
+                        logger.warning("Error método yt-dlp: %s", e)
+                        continue
+                # Último intento
                 try:
+                    yt_dlp_bin2 = '/tmp/yt-dlp'
+                    if os.path.exists(yt_dlp_bin2):
+                        cmd = [yt_dlp_bin2, "--dump-single-json", "--playlist-end", "1000", "--no-warnings", url]
+                        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                        stdout, stderr = process.communicate(timeout=180)
+                        if stdout.strip():
+                            data = json.loads(stdout.strip())
+                            entries = data.get("entries") or [] if isinstance(data, dict) else []
+                            if entries:
+                                resultado = []
+                                for e in entries:
+                                    if not e or not isinstance(e, dict):
+                                        continue
+                                    titulo = e.get("title") or e.get("id") or "Sin título"
+                                    video_id = e.get("id") or ""
+                                    url_item = e.get("url") or e.get("webpage_url") or ""
+                                    if video_id and not str(video_id).startswith('http'):
+                                        if 'music.youtube.com' in url:
+                                            url_item = f"https://music.youtube.com/watch?v={video_id}"
+                                        else:
+                                            url_item = f"https://www.youtube.com/watch?v={video_id}"
+                                    duration = e.get("duration") or 0
+                                    if url_item:
+                                        resultado.append({"titulo": titulo, "id": video_id or url_item, "url": url_item, "duracion": duration})
+                                if resultado:
+                                    console.print(f"[bold green]✓ Verificación completada: [bold white]{len(resultado)}[/] pista(s) encontrada(s)[/]")
+                                    return resultado
+                except Exception as e:
+                    logger.warning("Error último intento yt-dlp: %s", e)
+                console.print("[bold yellow]⚠ Usando modo directo (yt-dlp descargará toda la playlist).[/]")
+                return [{"titulo": "Descargar playlist completa (modo directo)", "url": url, "duracion": 0}]
+            elif self.PLATAFORMA == "Spotify":
+                try:
+                    cmd = ["spotdl", "save", url, "--save-file", "-", "--format", "json"]
                     process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
                     stdout, stderr = process.communicate(timeout=120)
-                except subprocess.TimeoutExpired:
-                    process.kill()
-                    process.communicate()
-                    console.print("[bold yellow]⚠️ Escaneo tardó demasiado. Se procederá con descarga directa.[/]")
-                    return []
-                # Intentar leer archivo generado
-                try:
-                    if os.path.exists("/tmp/friz_spotify_list.json"):
-                        with open("/tmp/friz_spotify_list.json", encoding="utf-8") as f:
-                            data = json.load(f)
-                        resultado = []
-                        if isinstance(data, list):
-                            for i, item in enumerate(data):
-                                if isinstance(item.get('artists'), list) and item['artists']:
-                                    artista = item['artists'][0]
-                                    titulo = f"{artista} - {item.get('name', 'Sin título')}"
-                                else:
-                                    titulo = item.get('name', f'Track {i+1}')
-                                duration = item.get('duration') or item.get('duration_ms', 0)
-                                if isinstance(duration, int) and duration > 100000:  # ms
-                                    duration = int(duration / 1000)
-                                resultado.append({"titulo": titulo, "url": item.get('url') or url, "duracion": duration or 0})
-                        elif isinstance(data, dict) and data.get("tracks"):
-                            for i, item in enumerate(data["tracks"]):
-                                if isinstance(item.get('artists'), list) and item['artists']:
-                                    artista = item['artists'][0]
-                                    titulo = f"{artista} - {item.get('name', 'Sin título')}"
-                                else:
-                                    titulo = item.get('name', f'Track {i+1}')
-                                duration = item.get('duration') or item.get('duration_ms', 0)
-                                if isinstance(duration, int) and duration > 100000:
-                                    duration = int(duration / 1000)
-                                resultado.append({"titulo": titulo, "url": item.get('url') or url, "duracion": duration or 0})
-                        return resultado
+                    if process.returncode == 0 and stdout.strip():
+                        try:
+                            data = json.loads(stdout.strip())
+                            if isinstance(data, list):
+                                resultado = []
+                                for e in data:
+                                    resultado.append({
+                                        "titulo": e.get("name") or e.get("title") or "Sin título",
+                                        "artista": e.get("artist") or e.get("artists", [{}])[0].get("name") if isinstance(e.get("artists"), list) else "",
+                                        "url": e.get("url") or url,
+                                        "duracion": e.get("duration") or 0
+                                    })
+                                if resultado:
+                                    console.print(f"[bold green]✓ Verificación completada: [bold white]{len(resultado)}[/] pista(s) encontrada(s)[/]")
+                                    return resultado
+                        except:
+                            pass
                 except Exception as e:
-                    logger.warning("Error leyendo archivo spotdl: %s", e)
-                return [{"titulo": "Contenido completo (descarga secuencial)", "url": url, "duracion": 0}]
-        except subprocess.TimeoutExpired:
-            console.print("[bold yellow]⚠️ Escaneo tardó demasiado. Se procederá con descarga directa.[/]")
-            return []
+                    logger.warning("Error escaneando Spotify: %s", e)
+                console.print("[bold yellow]⚠ Usando modo directo para Spotify.[/]")
+                return [{"titulo": "Descargar playlist/álbum completo (modo directo)", "url": url, "duracion": 0}]
         except Exception as e:
-            logger.warning("Error escaneando playlist: %s", e)
-            console.print(f"[bold yellow]⚠️ No se pudo escanear la playlist: {e}[/]")
-            return []
-
-    def calcular_tamano_aproximado(self, lista: list, calidad_audio_bitrate: str = None, tipo: str = "audio") -> str:
-        """Calcula tamaño aproximado en MB/GB basado en duración."""
-        if not lista:
-            return "N/A"
-        total_segundos = 0
-        for item in lista:
-            dur = item.get("duracion") or 0
-            if dur:
-                total_segundos += dur
-        if total_segundos == 0:
-            return "~Desconocido"
-
-        if tipo == "audio":
-            # Aproximaciones: 320kbps ~ 2.4MB/min, 256kbps ~ 1.92MB/min, 192kbps ~ 1.44MB/min, 128kbps ~ 0.96MB/min
-            bitrate = int(calidad_audio_bitrate) if calidad_audio_bitrate else 320
-            mb_por_minuto = (bitrate * 60) / 8 / 1024  # bitrate kbps -> MB/min
-            total_mb = (total_segundos / 60) * mb_por_minuto
-        else:  # video
-            # Aproximación conservadora
-            total_mb = (total_segundos / 60) * 15  # ~15MB/min promedio
-
-        if total_mb >= 1024:
-            return f"~{total_mb / 1024:.2f} GB"
-        elif total_mb >= 1:
-            return f"~{total_mb:.1f} MB"
+            logger.error("Error general escaneando playlist: %s", e)
+            console.print(f"[bold red]Error escaneando: {e}[/]")
+            return [{"titulo": "Descargar directo", "url": url, "duracion": 0}]
+    
+    def seleccionar_descarga(self, lista_tracks: list):
+        """Muestra lista y permite seleccionar qué descargar"""
+        if not lista_tracks or len(lista_tracks) == 0:
+            return None
+        if len(lista_tracks) == 1 and "directo" in lista_tracks[0]["titulo"].lower():
+            return lista_tracks
+        
+        console.print(f"\n[bold bright_cyan]📋 Lista encontrada ({len(lista_tracks)} elementos)[/]")
+        
+        tabla = Table(show_header=True, header_style="bold magenta", border_style="cyan")
+        tabla.add_column("#", style="cyan", width=4)
+        tabla.add_column("Título", style="white")
+        if self.PLATAFORMA == "Spotify":
+            tabla.add_column("Artista", style="yellow")
+        tabla.add_column("Duración", style="green", justify="right")
+        
+        duracion_total = 0
+        for i, track in enumerate(lista_tracks):
+            dur = track.get("duracion") or 0
+            if isinstance(dur, (int, float)) and dur > 0:
+                duracion_total += dur
+                mins = int(dur // 60)
+                secs = int(dur % 60)
+                dur_str = f"{mins}:{secs:02d}"
+            else:
+                dur_str = "--:--"
+            if self.PLATAFORMA == "Spotify":
+                tabla.add_row(str(i+1), track["titulo"][:60], track.get("artista", "")[:30], dur_str)
+            else:
+                tabla.add_row(str(i+1), track["titulo"][:70], dur_str)
+        
+        console.print(tabla)
+        if duracion_total > 0:
+            tmins = int(duracion_total // 60)
+            tsecs = int(duracion_total % 60)
+            thrs = tmins // 60
+            tmins_rest = tmins % 60
+            if thrs > 0:
+                console.print(f"[bold cyan]Duración total: {thrs}h {tmins_rest}m {tsecs}s[/]")
+            else:
+                console.print(f"[bold cyan]Duración total: {tmins}m {tsecs}s[/]")
+        
+        console.print("\n[bold yellow]Opciones:[/]")
+        console.print("  [cyan][A][/] Descargar todo")
+        console.print("  [cyan][R][/] Seleccionar rango (ej: 1-10)")
+        console.print("  [cyan][N][/] Seleccionar números específicos (ej: 1,3,5-7)")
+        console.print("  [cyan][X][/] Cancelar")
+        
+        opcion = Prompt.ask("[bold bright_magenta]Selección", choices=["A", "a", "R", "r", "N", "n", "X", "x"], default="A").upper()
+        
+        if opcion == "X":
+            return None
+        elif opcion == "A":
+            return lista_tracks
+        elif opcion == "R":
+            rango = Prompt.ask("[cyan]Ingresa rango (ej: 1-10)")
+            try:
+                if "-" in rango:
+                    inicio, fin = rango.split("-")
+                    inicio = int(inicio.strip()) - 1
+                    fin = int(fin.strip())
+                    return lista_tracks[inicio:fin]
+            except:
+                console.print("[red]Rango inválido, descargando todo[/]")
+                return lista_tracks
+        elif opcion == "N":
+            nums = Prompt.ask("[cyan]Ingresa números (ej: 1,3,5-7)")
+            seleccionados = []
+            try:
+                for parte in nums.split(","):
+                    parte = parte.strip()
+                    if "-" in parte:
+                        ini, fin = parte.split("-")
+                        for n in range(int(ini), int(fin)+1):
+                            if 0 < n <= len(lista_tracks):
+                                seleccionados.append(lista_tracks[n-1])
+                    else:
+                        n = int(parte)
+                        if 0 < n <= len(lista_tracks):
+                            seleccionados.append(lista_tracks[n-1])
+                return seleccionados if seleccionados else lista_tracks
+            except:
+                console.print("[red]Selección inválida, descargando todo[/]")
+                return lista_tracks
+        return lista_tracks
+    
+    def calcular_tamano_aprox(self, cantidad: int, calidad: str = "192") -> str:
+        """Calcula tamaño aproximado"""
+        try:
+            kbps = int(calidad)
+        except:
+            kbps = 192
+        # Aproximado: 1 min = (kbps * 60 / 8) KB
+        # Asumir ~3.5 min promedio
+        avg_min = 3.5
+        mb_total = (cantidad * avg_min * kbps * 60 / 8) / 1024
+        if mb_total >= 1024:
+            return f"~{mb_total/1024:.1f} GB"
         else:
-            return f"~{total_mb * 1024:.0f} KB"
-
-    def mostrar_lista_canciones(self, lista: list, calidad_audio_bitrate: str = None, tipo: str = "audio") -> list:
-        """Muestra tabla con canciones y permite seleccionar cuáles descargar."""
-        if not lista:
-            return []
-        # Calcular duración total
-        total_segundos = sum(item.get("duracion") or 0 for item in lista)
-        minutos = total_segundos // 60
-        segundos = total_segundos % 60
-        tamano_aprox = self.calcular_tamano_aproximado(lista, calidad_audio_bitrate, tipo)
-
-        table = Table(title=f"[bold magenta]🎵 CONTENIDO ENCONTRADO ({len(lista)} elementos)[/]", border_style="cyan")
-        table.add_column("#", style="cyan", justify="right", width=4)
-        table.add_column("Título", style="white")
-        table.add_column("Duración", style="yellow", justify="center", width=10)
-        for i, item in enumerate(lista, 1):
-            dur = item.get("duracion") or 0
-            if dur:
-                m = dur // 60
-                s = dur % 60
-                dur_str = f"{m}:{s:02d}"
+            return f"~{mb_total:.0f} MB"
+    
+    def mostrar_resumen(self, cantidad: int, calidad: str = "192", duracion_total: int = 0):
+        """Muestra resumen antes de descargar"""
+        console.print("\n" + "="*50)
+        console.print("[bold bright_cyan]📊 RESUMEN DE DESCARGA[/]")
+        console.print("="*50)
+        console.print(f"[cyan]Pistas a descargar:[/] [white]{cantidad}[/]")
+        if duracion_total > 0:
+            mins = duracion_total // 60
+            secs = duracion_total % 60
+            hrs = mins // 60
+            mins_rest = mins % 60
+            if hrs > 0:
+                console.print(f"[cyan]Duración total:[/] [white]{hrs}h {mins_rest}m {secs}s[/]")
             else:
-                dur_str = "N/A"
-            table.add_row(str(i), item.get("titulo", "Sin título")[:70], dur_str)
-        console.print(table)
-        console.print(f"\n[bold bright_cyan]📊 RESUMEN:[/] {len(lista)} pistas | Duración total: [yellow]{minutos}:{segundos:02d}[/] | Tamaño aprox.: [bold green]{tamano_aprox}[/]")
-        console.print("\n[bold cyan]Opciones:[/] [green]all[/] = todas | [yellow]1,2,5[/] = selección específica | [yellow]1-10[/] = rango | [red]q[/] = cancelar")
-        seleccion = Prompt.ask("[bold bright_magenta]FRIZ-NET[/] ¿Qué deseas descargar?", default="all")
-        if seleccion.lower() in ('q', 'cancelar', 'salir'):
-            return []
-        if seleccion.lower() == 'all':
-            return lista
-        # Parsear selección
-        indices = []
-        for parte in seleccion.replace(' ', '').split(','):
-            if '-' in parte:
-                try:
-                    a, b = parte.split('-')
-                    indices.extend(range(int(a), int(b) + 1))
-                except Exception:
-                    continue
-            else:
-                try:
-                    indices.append(int(parte))
-                except Exception:
-                    continue
-        resultado = []
-        for idx in indices:
-            if 1 <= idx <= len(lista):
-                resultado.append(lista[idx - 1])
-        return resultado
-
-    def download_seguro(self, url: str) -> bool:
-        """Punto de entrada público: valida la URL y, si es válida, delega en `download`.
-
-        Esto añade defensa en profundidad: cada descargador valida por sí
-        mismo, sin depender exclusivamente de que la capa de UI
-        (`friz.py`) haya llamado antes al validador.
-        """
-        es_valida, mensaje_error = validar_url_para_plataforma(url, self.PLATAFORMA)
-        if not es_valida:
-            console.print(f"[bold red]❌ URL INVÁLIDA:[/] {mensaje_error}")
-            logger.warning("URL rechazada para %s: %s (%s)", self.PLATAFORMA, url, mensaje_error)
-            return False
-        return self.download(url)
-
-    @abstractmethod
-    def download(self, url: str) -> bool:
-        """Ejecuta la descarga para la URL dada. Implementado por cada subclase."""
+                console.print(f"[cyan]Duración total:[/] [white]{mins}m {secs}s[/]")
+        console.print(f"[cyan]Calidad:[/] [white]{calidad} kbps[/]")
+        console.print(f"[cyan]Tamaño aproximado:[/] [white]{self.calcular_tamano_aprox(cantidad, calidad)}[/]")
+        console.print(f"[cyan]Destino:[/] [white]{self.output_dir}[/]")
+        console.print("="*50 + "\n")
+    
+    def download_seguro(self, url: str):
+        """Método base para descarga segura"""
         raise NotImplementedError
-
-
-class YtDlpDownloader(BaseDownloader):
-    """Plantilla común para toda plataforma soportada a través de `yt-dlp`.
-
-    Elimina la duplicación que existía entre `youtube.py`, `instagram.py`,
-    `facebook.py`, `twitter.py` y `pinterest.py`: cada subclase solo
-    necesita declarar `PLATAFORMA`, `PREFIJO_ARCHIVO` y, opcionalmente,
-    `FLAGS_EXTRA` o sobreescribir `limpiar_url`.
-    """
-
-    #: Plantilla de nombre de archivo de salida (sin extensión), p. ej. "Instagram_%(id)s"
-    PREFIJO_ARCHIVO: str = "%(title)s"
-    #: Flags adicionales de yt-dlp específicos de la plataforma (lista de strings)
-    FLAGS_EXTRA: list = []
-
-    def limpiar_url(self, url: str) -> str:
-        """Punto de extensión para limpiar/normalizar la URL antes de descargar.
-        Por defecto no modifica nada; las subclases pueden sobreescribirlo.
-        """
-        return url
-
-    def download(self, url: str) -> bool:
-        url_limpia = self.limpiar_url(url)
-        formato_calidad = self.seleccionar_calidad()
-
-        console.print(f"\n[bold bright_cyan]⚡ INICIANDO EXTRACCIÓN DE {self.PLATAFORMA.upper()}...[/]")
-
-        cmd = [
-            "yt-dlp",
-            "-P", self.output_dir,
-            "-f", formato_calidad,
-            "-o", f"{self.PREFIJO_ARCHIVO}.%(ext)s",
-            *self.FLAGS_EXTRA,
-            url_limpia,
-        ]
-        return self.ejecutar_comando_animado(cmd, self.PLATAFORMA)

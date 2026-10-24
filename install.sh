@@ -1,74 +1,62 @@
 #!/bin/bash
+# Friz Universal Installer
 
-# ==============================================================================
-# 🎵 Friz - Script de Instalación Automatizado (Termux / Android)
-# ==============================================================================
+echo "╔══════════════════════════════════════════════════════════════╗"
+echo "║                    FRIZ INSTALLER                           ║"
+echo "╚══════════════════════════════════════════════════════════════╝"
 
-# Colores para la interfaz
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-PURPLE='\033[0;35m'
-CYAN='\033[0;36m'
-NC='\033[0m' # No Color
-
-clear
-echo -e "${PURPLE}"
-echo "   ███████╗██████╗ ██╗███████╗"
-echo "   ██╔════╝██╔══██╗██║╚══███╔╝"
-echo "   █████╗  ██████╔╝██║  ███╔╝ "
-echo "   ██╔══╝  ██╔══██╗██║ ███╔╝  "
-echo "   ██║     ██║  ██║██║███████╗"
-echo "   ╚═╝     ╚═╝  ╚═╝╚═╝╚══════╝"
-echo -e "${CYAN}    Instalador Automático para Termux${NC}\n"
-
-echo -e "${YELLOW}[1/5] Actualizando lista de paquetes de Termux...${NC}"
-pkg update -y && pkg upgrade -y
-
-echo -e "\n${YELLOW}[2/5] Instalando dependencias del sistema (Python, FFmpeg, Git)...${NC}"
-pkg install python ffmpeg git -y
-
-pip install pydantic-core
-
-echo -e "\n${YELLOW}[3/5] Solicitando permisos de almacenamiento en Android...${NC}"
-echo -e "${CYAN}Si aparece una ventana emergente en tu pantalla, presiona 'PERMITIR'.${NC}"
-termux-setup-storage
-sleep 2
-
-echo -e "\n${YELLOW}[4/5] Actualizando pip e instalando dependencias de Python...${NC}"
-python3 -m pip install --upgrade pip
-
-if [ -f "requirements.txt" ]; then
-    pip install -r requirements.txt
+# Detectar sistema
+if [ -d "/data/data/com.termux" ]; then
+    echo "[TERMUX] Detectado"
+    pkg update -y && pkg upgrade -y
+    pkg install -y python ffmpeg git curl
+elif [ "$(uname)" == "Darwin" ]; then
+    echo "[MACOS] Detectado"
+    if command -v brew &> /dev/null; then
+        brew install ffmpeg python3
+    fi
 else
-    echo -e "${CYAN}Instalando módulos esenciales (yt-dlp, requests, spotdl, colorama, pillow)...${NC}"
-    pip install yt-dlp requests spotdl colorama pillow
+    echo "[LINUX] Detectado"
+    if command -v apt-get &> /dev/null; then
+        sudo apt-get update && sudo apt-get install -y python3 python3-pip ffmpeg git curl
+    elif command -v pacman &> /dev/null; then
+        sudo pacman -S --noconfirm python python-pip ffmpeg git curl
+    elif command -v yum &> /dev/null; then
+        sudo yum install -y python3 python3-pip ffmpeg git curl
+    fi
 fi
 
-echo -e "\n${YELLOW}[5/5] Configurando ejecutable global y carpeta de descargas...${NC}"
+# Crear directorios
+mkdir -p ~/.local/bin ~/Downloads/Friz
 
-# Crear la carpeta de destino pública en Android
-mkdir -p /sdcard/Download/Friz
+# Instalar yt-dlp actualizado
+echo "[*] Instalando yt-dlp actualizado..."
+curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o ~/.local/bin/yt-dlp
+chmod +x ~/.local/bin/yt-dlp
 
-# Crear el acceso directo 'friz' en el PATH del sistema
-LAUNCHER="$PREFIX/bin/friz"
-SCRIPT_PATH="$(pwd)/friz.py"
+# Copiar a /tmp también
+cp ~/.local/bin/yt-dlp /tmp/yt-dlp 2>/dev/null && chmod +x /tmp/yt-dlp
 
-cat << EOF > "$LAUNCHER"
-#!/bin/bash
-python3 "$SCRIPT_PATH" "\$@"
-EOF
+# Instalar dependencias Python
+echo "[*] Instalando dependencias Python..."
+pip3 install --user -q -U rich requests spotdl yt-dlp 2>/dev/null || pip install --user -q -U rich requests spotdl yt-dlp 2>/dev/null || python3 -m pip install --user -q -U rich requests spotdl yt-dlp 2>/dev/null
 
-chmod +x "$LAUNCHER"
-chmod +x friz.py
+# Añadir al PATH
+if ! grep -q '.local/bin' ~/.bashrc 2>/dev/null; then
+    echo 'export PATH=$HOME/.local/bin:$PATH' >> ~/.bashrc
+fi
+if ! grep -q '.local/bin' ~/.zshrc 2>/dev/null; then
+    echo 'export PATH=$HOME/.local/bin:$PATH' >> ~/.zshrc
+fi
 
-echo -e "\n${GREEN}====================================================${NC}"
-echo -e "${GREEN}  ¡INSTALACIÓN COMPLETADA CON ÉXITO! 🎉${NC}"
-echo -e "${GREEN}====================================================${NC}"
-echo -e "${CYAN}Tus descargas se guardarán en: ${YELLOW}/sdcard/Download/Friz/${NC}"
-echo -e "${CYAN}Para iniciar la herramienta puedes escribir en tu terminal:${NC}"
-echo -e "${YELLOW}  friz${NC}"
-echo -e "${CYAN}o ejecutar:${NC}"
-echo -e "${YELLOW}  python friz.py${NC}"
-echo -e "${GREEN}====================================================${NC}\n"
+export PATH=$HOME/.local/bin:$PATH
+
+echo ""
+echo "╔══════════════════════════════════════════════════════════════╗"
+echo "║                  INSTALACIÓN COMPLETADA                     ║"
+echo "╚══════════════════════════════════════════════════════════════╝"
+echo ""
+echo "Para ejecutar Friz:"
+echo "  python3 friz.py"
+echo "  o ./run_friz.sh"
+echo ""

@@ -104,6 +104,9 @@ def mostrar_menu():
     ))
 
 def main():
+    # Verificar dependencias antes de iniciar
+    verificar_y_corregir_dependencias()
+    
     # Ejecuta la animación de arranque al iniciar la herramienta
     try:
         animacion_de_inicio()
@@ -165,3 +168,17 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+# Verificación de dependencias al inicio
+def verificar_y_corregir_dependencias():
+    """Verifica y corrige dependencias al momento de ejecutar"""
+    try:
+        from modules.dependency_checker import verificar_dependencias
+        console.print("\n[bold cyan]🔍 Verificando entorno...[/]")
+        verificar_dependencias(auto_instalar=True)
+        time.sleep(1)
+    except Exception as e:
+        console.print(f"[yellow]⚠ No se pudo verificar dependencias: {e}[/]")
+        console.print("[dim]Continuando con la ejecución...[/]")
+        time.sleep(1)
